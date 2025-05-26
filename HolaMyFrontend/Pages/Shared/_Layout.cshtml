@@ -237,7 +237,7 @@
 
             if (token) {
                 const user = await fetchUserProfile();
-                if (user)
+                if (user) { 
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
                     const fullName = `${user.firstName} ${user.lastName}`;
