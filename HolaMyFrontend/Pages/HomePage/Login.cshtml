@@ -1,0 +1,59 @@
+﻿@page
+@model HolaMyFrontend.Pages.HomePage.LoginModel
+@{
+    ViewData["Title"] = "Đăng nhập";;
+}
+
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-light rounded p-4">
+                    <h2 class="text-center mb-4">Đăng nhập</h2>
+                    <form id="phone-login-form">
+                        <h4 class="mb-3">Đăng nhập bằng số điện thoại</h4>
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">Số điện thoại</label>
+                            <input id="phoneNumber" class="form-control" placeholder="Số điện thoại" required />
+                            <span id="phoneNumber-error" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <input id="password" type="password" class="form-control" placeholder="Mật khẩu" required />
+                            <span id="password-error" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input id="rememberMe" type="checkbox" class="form-check-input" />
+                                <label for="rememberMe" class="form-check-label">Ghi nhớ đăng nhập</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Đăng nhập</button>
+                    </form>
+                    <hr class="my-4" />
+                    <h4 class="text-center mb-3">Hoặc</h4>
+                    <form asp-page-handler="Google" method="post">
+                        <button type="submit" class="btn btn-outline-danger w-100 rounded-pill">
+                            <i class="fab fa-google me-2"></i> Đăng nhập bằng Google
+                        </button>
+                    </form>
+                    <p class="text-center mt-3">
+                        Chưa có tài khoản? <a href="/HomePage/Register" class="text-primary">Đăng ký ngay</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+       
+        const token = '@ViewData["Token"]';
+        if (token) {
+            localStorage.setItem('jwtToken', token);
+            window.location.href = '/'; 
+        }
+
+    </script>
+}
