@@ -21,6 +21,7 @@ function initializeRecaptcha() {
     appVerifier.render();
 }
 function sendOTP() {
+    initializeRecaptcha();
     let phoneNumber = document.getElementById('phoneNumber').value;
     if (phoneNumber.startsWith('0')) {
         phoneNumber = phoneNumber.replace(/^0/, '+84');
@@ -86,6 +87,7 @@ async function Register() {
     const firstName = document.getElementById('firstName').value;
     const lastName = document.getElementById('lastName').value;
     const userType = document.getElementById('userType').value;
+    const statusDiv = document.getElementById('status');
      try {
          const response = await fetch('http://localhost:8888/api/User/register', {
              method: 'POST',
@@ -99,12 +101,14 @@ async function Register() {
              console.log(`Data is: ${data.data}`);
              window.location.href = `http://localhost:5050/HomePage/Login?token=${data.data}`;
          } else {
-             document.getElementById('phoneNumber-error').textContent = data.message || 'Đăng ký thất bại';
+             statusDiv.classList.add("text-danger");
+             statusDiv.textContent = data.message || 'Đăng ký thất bại';
+             
            
          }
      } catch (error) {
 
-         document.getElementById('phoneNumber-error').textContent = 'Lỗi kết nối đến API';
+         statusDiv.textContent = 'Lỗi kết nối đến API';
      }
 
 

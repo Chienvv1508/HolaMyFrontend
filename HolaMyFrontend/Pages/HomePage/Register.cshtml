@@ -101,7 +101,7 @@
             document.getElementById('otpSection').classList.remove('d-none');
             document.getElementById('otpSection').classList.add('d-block');
             document.getElementById('registerSection').classList.add('d-none');
-            initializeRecaptcha();
+            
             document.getElementById('otp').addEventListener('input', () => {
                 const otp = document.getElementById('otp').value;
                 document.getElementById('verifyOtpBtn').disabled = otp.length < 6;
@@ -203,6 +203,7 @@
            
             return false;
         }
+        return true;
       
     }
 
