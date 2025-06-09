@@ -25,12 +25,13 @@
 
     <!-- Template Stylesheet -->
     <link href="~/css/style.css" rel="stylesheet" asp-append-version="true">
+   
      <style>
         body {
             padding-top: 100px; 
         }
        
-        }
+        
     </style>
 </head>
 <body>
@@ -206,8 +207,30 @@
     <script src="~/lib/waypoints/waypoints.min.js"></script>
     <script src="~/lib/lightbox/js/lightbox.min.js"></script>
     <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
 
     <script src="~/js/main.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          
+            const firebaseConfig = {
+                apiKey: "AIzaSyDNviFvnFgrC42AouVAejbLT3c_IkQIqrU",
+                authDomain: "authen-b7820.firebaseapp.com",
+                projectId: "authen-b7820",
+                storageBucket: "authen-b7820.firebasestorage.app",
+                messagingSenderId: "896193465313",
+                measurementId: "G-W3QDGZRXS7",
+                appId: "1:896193465313:web:317d5b6e9eb067da2960a0"
+            };
+            firebase.initializeApp(firebaseConfig);
+
+            
+            updateAuthUI();
+        });
+    </script>
+
     <script>
         
             async function fetchUserProfile() {
@@ -215,7 +238,7 @@
                 if (!token) return null;
 
                 try {
-                    const response = await fetch('http://localhost:9999/api/User/profile', {
+                    const response = await fetch('http://localhost:8888/api/User/profile', {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -272,6 +295,8 @@
         }
         document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>
+    
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

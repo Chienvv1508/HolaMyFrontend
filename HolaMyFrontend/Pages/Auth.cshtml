@@ -1,0 +1,32 @@
+﻿@page
+@model HolaMyFrontend.Pages.AuthModel
+@{
+    ViewData["Title"] = "Xác thực số điện thoại";
+}
+
+<h2 class="text-center mt-5">Xác thực số điện thoại</h2>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4 shadow-sm">
+                @* <div class="mb-3">
+                    <label for="phone" class="form-label">Số điện thoại</label>
+                    <input id="phone" type="tel" class="form-control" placeholder="+84901234567" required />
+                </div> *@
+                <div id="recaptcha-container" class="mb-3"></div>
+                @* <button id="sendOtpBtn" class="btn btn-primary w-100 rounded-pill" onclick="sendOTP()">Gửi OTP</button> *@
+                <div class="mt-3">
+                    <label for="otp" class="form-label">Mã OTP</label>
+                    <input id="otp" type="text" class="form-control" placeholder="Nhập mã OTP" required />
+                </div>
+                <button id="verifyOtpBtn" class="btn btn-success w-100 rounded-pill mt-3" onclick="verifyOTP()" disabled>Xác minh OTP</button>
+                <div id="status" class="mt-3 text-center text-danger"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/phone-auth.js" asp-append-version="true"></script>
+}

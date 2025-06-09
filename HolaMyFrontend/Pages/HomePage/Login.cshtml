@@ -1,7 +1,7 @@
 ﻿@page
 @model HolaMyFrontend.Pages.HomePage.LoginModel
 @{
-    ViewData["Title"] = "Đăng nhập";;
+    ViewData["Title"] = "Đăng nhập";
 }
 
 <div class="container-fluid py-5">
@@ -10,26 +10,27 @@
             <div class="col-md-6 col-lg-4">
                 <div class="bg-light rounded p-4">
                     <h2 class="text-center mb-4">Đăng nhập</h2>
-                    <form id="phone-login-form">
+                    <form id="phone-login-form" asp-page-handler="Phone" method="post">
                        
                         <div class="mb-3">
-                            <label for="phoneNumber" class="form-label">Số điện thoại</label>
-                            <input id="phoneNumber" class="form-control" placeholder="Số điện thoại" required />
+                            <label for="loginPhone.PhoneNumber" class="form-label">Số điện thoại</label>
+                            <input asp-for="loginPhone.PhoneNumber" class="form-control" placeholder="Số điện thoại" required />
                             <span id="phoneNumber-error" class="text-danger"></span>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mật khẩu</label>
-                            <input id="password" type="password" class="form-control" placeholder="Mật khẩu" required />
+                            <label for="loginPhone.Password" class="form-label">Mật khẩu</label>
+                            <input asp-for="loginPhone.Password" type="password" class="form-control" placeholder="Mật khẩu" required />
                             <span id="password-error" class="text-danger"></span>
                         </div>
-                        <div class="mb-3">
+                        @* <div class="mb-3">
                             <div class="form-check">
                                 <input id="rememberMe" type="checkbox" class="form-check-input" />
                                 <label for="rememberMe" class="form-check-label">Ghi nhớ đăng nhập</label>
                             </div>
-                        </div>
+                        </div> *@
                         <button type="submit" class="btn btn-primary w-100 rounded-pill">Đăng nhập</button>
                     </form>
+                    <div asp-validation-summary="All" class="text-danger"></div>
                     <hr class="my-4" />
                     <h4 class="text-center mb-3">Hoặc</h4>
                     <form asp-page-handler="Google" method="post">
@@ -46,14 +47,15 @@
     </div>
 </div>
 
-@section Scripts {
+
     <script>
        
         const token = '@ViewData["Token"]';
         if (token) {
             localStorage.setItem('jwtToken', token);
             window.location.href = '/'; 
+            console.log(`Token is: ${token}`);
         }
+        console.log('Token is null');
 
     </script>
-}
