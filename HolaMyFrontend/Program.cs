@@ -1,8 +1,19 @@
+﻿using HolaMyFrontend.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
-builder.Services.AddHttpClient();
+
+// Đăng ký ApiSettings
+builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiUrl"));
+
+// Đăng ký HttpClient với IHttpClientFactory
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    var apiSettings = builder.Configuration.GetSection("ApiUrl").Get<ApiSettings>();
+    client.BaseAddress = new Uri(apiSettings.BaseUrl);
+});
 
 var app = builder.Build();
 
