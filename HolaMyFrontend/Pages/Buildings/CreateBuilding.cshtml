@@ -1,0 +1,328 @@
+﻿@page
+@model HolaMyFrontend.Pages.Buildings.CreateBuildingModel
+@{
+    ViewData["Title"] = "Tạo nhà trọ mới";
+    Layout = "_Layout";
+}
+<!-- Page Header Start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Tạo nhà trọ mới</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="/Buildings/BuildingList">Nhà trọ</a></li>
+        <li class="breadcrumb-item active text-white">Tạo nhà trọ mới</li>
+    </ol>
+</div>
+<!-- Page Header End -->
+<!-- Main Content Start -->
+<div class="container my-5">
+    <div class="container-form">
+        <h2>Chi tiết nhà trọ mới</h2>
+        <form id="buildingForm" method="POST" enctype="multipart/form-data">
+            <!-- Building Details -->
+            <div class="form-item">
+                <label for="buildingName">Tên Nhà Trọ <span class="text-danger">*</span></label>
+                <input type="text" id="buildingName" name="BuildingName" required placeholder="Nhập tên nhà trọ">
+            </div>
+            <div class="form-item">
+                <label for="wardId">Phường/Xã <span class="text-danger">*</span></label>
+                <select id="wardId" name="WardId" required>
+                    <option value="" disabled selected>-- Chọn Phường/Xã --</option>
+                    @* Duyệt qua Model.Wards nếu có dữ liệu từ server *@
+                    <option value="1">Phường 1</option>
+                    <option value="2">Phường 2</option>
+                    <option value="3">Phường 3</option>
+                </select>
+            </div>
+            <div class="form-item">
+                <label for="addressDetail">Địa chỉ chi tiết</label>
+                <input type="text" id="addressDetail" name="AddressDetail" placeholder="Nhập địa chỉ chi tiết">
+            </div>
+            <div class="form-item">
+                <label for="description">Mô tả</label>
+                <textarea id="description" name="Description" rows="3" placeholder="Nhập mô tả ngắn"></textarea>
+            </div>
+
+            <!-- Building Images -->
+            <div class="section-title">Ảnh Nhà Trọ</div>
+            <div id="buildingImagesContainer"></div>
+            <button type="button" class="add-btn" onclick="addBuildingImage()">+ Thêm Ảnh Nhà Trọ</button>
+            <div></div>
+
+            <!-- Rooms Details -->
+            <div class="section-title">Các Phòng</div>
+            <div id="roomsContainer"></div>
+            <button type="button" class="add-btn" onclick="addRoom()">+ Thêm Phòng</button>
+
+            <div class="form-item mt-4">
+                <button type="submit" class="btn btn-primary">Tạo Nhà Trọ</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Main Content End -->
+<!-- Custom CSS: Giao diện xanh lá & trắng -->
+<style>
+    body {
+        font-family: 'Open Sans', sans-serif;
+        background-color: #ffffff;
+    }
+    /* Page Header với nền xanh lá và text trắng */
+    .page-header {
+        background-color: #4caf50;
+        color: #fff;
+    }
+
+        .page-header h1 {
+            font-family: 'Raleway', sans-serif;
+            font-size: 3rem;
+            font-weight: 800;
+        }
+
+    .breadcrumb li a {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+    /* Container form chính */
+    .container-form {
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 50px;
+        border: 2px solid #4caf50;
+    }
+
+        .container-form h2 {
+            font-family: 'Raleway', sans-serif;
+            margin-bottom: 20px;
+            color: #4caf50;
+        }
+
+    .form-item {
+        margin-bottom: 15px;
+    }
+
+        .form-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4caf50;
+        }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #4caf50;
+        box-sizing: border-box;
+    }
+
+    .add-btn {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        cursor: pointer;
+    }
+
+    .btn.btn-primary {
+        background-color: #4caf50;
+        border-color: #4caf50;
+    }
+
+    .remove-btn {
+        background: transparent;
+        border: none;
+        color: #ff5722;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 5px;
+    }
+
+    fieldset {
+        border: 2px solid #4caf50;
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    legend {
+        font-size: 1.2em;
+        font-weight: bold;
+        padding: 0 10px;
+        color: #4caf50;
+    }
+
+    .section-title {
+        margin: 20px 0 10px;
+        font-size: 1.3em;
+        font-weight: bold;
+        border-bottom: 2px solid #4caf50;
+        display: inline-block;
+        padding-bottom: 5px;
+        color: #4caf50;
+    }
+
+    .image-container,
+    .room-images-container {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px dashed #4caf50;
+        border-radius: 5px;
+        background: #f9fff9;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/easing/easing.min.js"></script>
+    <script src="lib/waypoints/waypoints.min.js"></script>
+    <script src="lib/lightbox/js/lightbox.min.js"></script>
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Counters cho các id duy nhất
+        let buildingImageIndex = 0;
+        let roomIndex = 0;
+        // Để theo dõi số lượng ảnh của từng phòng
+        let roomImageCounters = {};
+
+        // Thêm ảnh cho Building
+        function addBuildingImage() {
+          const container = document.getElementById('buildingImagesContainer');
+          const index = buildingImageIndex++;
+          const div = document.createElement('div');
+          div.className = 'image-container mb-3';
+          div.id = 'building-img-' + index;
+          div.innerHTML = `
+            <div class="form-item">
+              <label>Ảnh Nhà Trọ <span class="text-danger">*</span></label>
+              <input type="file" name="BuildingImages[${index}].ImageUrl" required>
+            </div>
+            <div class="form-item">
+              <label>Mô tả</label>
+              <input type="text" name="BuildingImages[${index}].Description" placeholder="Mô tả (tuỳ chọn)">
+            </div>
+            <div class="form-item">
+              <label>
+                <input type="checkbox" name="BuildingImages[${index}].IsThumbnail">
+                Ảnh đại diện
+              </label>
+            </div>
+            <button type="button" class="remove-btn" onclick="removeElement('building-img-${index}')">- Xóa Ảnh</button>
+          `;
+          container.appendChild(div);
+        }
+
+        // Thêm một phòng mới
+        function addRoom() {
+          const container = document.getElementById('roomsContainer');
+          const currentRoomIndex = roomIndex++;
+          // Khởi tạo counter cho ảnh của phòng này
+          roomImageCounters[currentRoomIndex] = 0;
+
+          const fieldset = document.createElement('fieldset');
+          fieldset.className = 'mb-4';
+          fieldset.id = 'room-' + currentRoomIndex;
+          fieldset.innerHTML = `
+            <legend>Phòng ${currentRoomIndex + 1}</legend>
+            <div class="form-item">
+              <label>Diện tích (m²) <span class="text-danger">*</span></label>
+              <input type="number" name="Rooms[${currentRoomIndex}].AreaM2" required placeholder="VD: 30">
+            </div>
+            <div class="form-item">
+              <label>Giá (VNĐ/tháng) <span class="text-danger">*</span></label>
+              <input type="number" name="Rooms[${currentRoomIndex}].Price" required placeholder="VD: 1000000">
+            </div>
+            <div class="form-item">
+              <label>Mô tả phòng</label>
+              <input type="text" name="Rooms[${currentRoomIndex}].Description" placeholder="Mô tả phòng">
+            </div>
+            <div class="form-item">
+              <label>Loại phòng <span class="text-danger">*</span></label>
+              <select name="Rooms[${currentRoomIndex}].RoomTypeId" required>
+                <option value="">-- Chọn loại phòng --</option>
+                <option value="1">Phòng đơn</option>
+                <option value="2">Phòng đôi</option>
+                <option value="3">Suite</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label>
+                <input type="checkbox" name="Rooms[${currentRoomIndex}].IsAvailable" checked>
+                Phòng sẵn sàng cho thuê
+              </label>
+            </div>
+            <div class="form-item">
+              <div class="section-title">Ảnh Phòng</div>
+              <div id="room-images-${currentRoomIndex}" class="room-images-container"></div>
+              <button type="button" class="add-btn" onclick="addRoomImage(${currentRoomIndex})">+ Thêm Ảnh Phòng</button>
+            </div>
+                    <div class="form-item">
+          <div class="section-title">Tiện nghi</div>
+          <div id="amenities-container-${currentRoomIndex}"></div>
+        </div>
+            <button type="button" class="remove-btn" onclick="removeElement('room-${currentRoomIndex}')">- Xóa Phòng</button>
+          `;
+                  const amenityContainer = fieldset.querySelector(`#amenities-container-${currentRoomIndex}`);
+        amenities.forEach(a => {
+            const label = document.createElement('label');
+            label.innerHTML = `
+                <input type="checkbox" name="Rooms[${currentRoomIndex}].AmenityIds" value="${a.id}">
+                ${a.name}
+            `;
+            amenityContainer.appendChild(label);
+        });
+          container.appendChild(fieldset);
+        }
+
+        // Thêm ảnh cho từng phòng
+        function addRoomImage(roomIdx) {
+          const container = document.getElementById('room-images-' + roomIdx);
+          const currentRoomImageIndex = roomImageCounters[roomIdx]++;
+          const div = document.createElement('div');
+          div.className = 'image-container mb-3';
+          div.id = `room-${roomIdx}-img-${currentRoomImageIndex}`;
+          div.innerHTML = `
+            <div class="form-item">
+              <label>Ảnh Phòng <span class="text-danger">*</span></label>
+              <input type="file" name="Rooms[${roomIdx}].RoomImages[${currentRoomImageIndex}].ImageUrl" required>
+            </div>
+            <div class="form-item">
+              <label>Mô tả ảnh</label>
+              <input type="text" name="Rooms[${roomIdx}].RoomImages[${currentRoomImageIndex}].Description" placeholder="Mô tả ảnh (tuỳ chọn)">
+            </div>
+            <div class="form-item">
+              <label>
+                <input type="checkbox" name="Rooms[${roomIdx}].RoomImages[${currentRoomImageIndex}].IsThumbnail">
+                Ảnh đại diện
+              </label>
+            </div>
+            <button type="button" class="remove-btn" onclick="removeElement('room-' + ${roomIdx} + '-img-' + ${currentRoomImageIndex})">- Xóa Ảnh Phòng</button>
+          `;
+          container.appendChild(div);
+        }
+
+        // Xóa phần tử theo id
+        function removeElement(elementId) {
+          const elem = document.getElementById(elementId);
+          if (elem) {
+            elem.remove();
+          }
+        }
+
+        const amenities = [
+            @foreach (var amenity in Model.Amenities)
+            {
+                    <text>{ id: @amenity.AmenityId, name: "@amenity.Name" },</text>
+            }
+        ];
+    </script>
+}
