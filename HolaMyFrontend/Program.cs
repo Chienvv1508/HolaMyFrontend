@@ -7,6 +7,9 @@ builder.Services.AddRazorPages();
 
 // Đăng ký ApiSettings
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiUrl"));
+builder.Services.AddHttpClient(); // Rất quan trọng để IHttpClientFactory hoạt động
+builder.Services.AddHttpContextAccessor(); // Cần thiết để lấy Antiforgery token
+builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken"); // Cấu hình antiforgery
 
 // Đăng ký HttpClient với IHttpClientFactory
 builder.Services.AddHttpClient("ApiClient", client =>
