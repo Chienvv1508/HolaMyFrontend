@@ -11,7 +11,6 @@ namespace HolaMy.Core.DTOs.BuildingDTOs
     {
         public int BuildingId { get; set; }
         public string BuildingName { get; set; } = string.Empty;
-        public int ProviderId { get; set; }
         public string? AddressDetail { get; set; }
         public string? Description { get; set; }
         public WardDTO Ward { get; set; }
@@ -20,6 +19,17 @@ namespace HolaMy.Core.DTOs.BuildingDTOs
         public int UpdatedHoursBefore { get; set; }
         public List<BuildingImageDTO> BuildingImages { get; set; } = new List<BuildingImageDTO>();
         public List<RoomDTO> Rooms { get; set; } = new List<RoomDTO>();
+        public ProviderDTO Provider { get; set; }
+    }
+    public class ProviderDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime JoinDate { get; set; }
+        public int PostCount { get; set; }
+        public string PhoneNumber { get; set; }
+
+        public string Avatar { get; set; }
     }
     public class BuildingImageDTO
     {
@@ -32,7 +42,7 @@ namespace HolaMy.Core.DTOs.BuildingDTOs
     public class RoomDTO
     {
         public int RoomId { get; set; }
-        public RoomTypeDTO RoomTypeName { get; set; } = new RoomTypeDTO();
+        public RoomTypeDTO RoomType { get; set; } = new RoomTypeDTO();
         public float? AreaM2 { get; set; }
         public decimal? Price { get; set; }
         public bool? IsAvailable { get; set; }
