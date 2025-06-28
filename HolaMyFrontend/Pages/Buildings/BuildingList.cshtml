@@ -222,6 +222,9 @@
                                                     <a href="/Buildings/BuildingDetail/@building.BuildingId" class="btn border border-secondary rounded-pill px-3 text-primary">
                                                         <i class="fa fa-eye me-2 text-primary"></i> Xem chi tiết
                                                     </a>
+                                                    <button class="btn border border-secondary rounded-pill px-3 text-primary favorite-btn" data-building-id="@building.BuildingId" onclick="toggleFavorite(@building.BuildingId)">
+                                                        <i class="fa fa-heart me-2" id="heart-icon-@building.BuildingId"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

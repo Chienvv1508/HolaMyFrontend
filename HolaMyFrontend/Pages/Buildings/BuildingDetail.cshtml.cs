@@ -1,4 +1,4 @@
-using HolaMy.Core.DTOs.BuildingDTOs;
+﻿using HolaMy.Core.DTOs.BuildingDTOs;
 using HolaMyFrontend.Models;
 using HolaMyFrontend.Models.BuildingDTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -42,17 +42,17 @@ namespace HolaMyFrontend.Pages.Buildings
                     }
                     else
                     {
-                        ErrorMessage = apiResponse.Message ?? "Kh�ng t�m th?y t�a nh�.";
+                        ErrorMessage = apiResponse.Message ?? "Không tìm thấy tòa nhà.";
                     }
                 }
                 else
                 {
-                    ErrorMessage = $"L?i khi g?i API: {response.StatusCode}";
+                    ErrorMessage = $"Lỗi khi gọi API: {response.StatusCode}";
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"L?i x?y ra: {ex.Message}";
+                ErrorMessage = $"Lỗi xảy ra: {ex.Message}";
             }
         }
     }
