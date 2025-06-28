@@ -219,7 +219,7 @@
                                                 <p class="description">Giá từ: @(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
                                                 <p class="description">Cập nhật: @building.UpdatedHoursBefore giờ trước</p>
                                                 <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <a href="/Buildings/Detail?buildingId=@building.BuildingId" class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                    <a href="/Buildings/BuildingDetail/@building.BuildingId" class="btn border border-secondary rounded-pill px-3 text-primary">
                                                         <i class="fa fa-eye me-2 text-primary"></i> Xem chi tiết
                                                     </a>
                                                 </div>
