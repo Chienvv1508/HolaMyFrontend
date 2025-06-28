@@ -22,31 +22,6 @@
         public string? SortBy { get; set; }
         public string? Search { get; set; }
     }
-
-    public class BuildingDetailDTO
-    {
-        public int BuildingId { get; set; }
-        public string BuildingName { get; set; } = string.Empty;
-        public int ProviderId { get; set; }
-        public string? AddressDetail { get; set; }
-        public string? Description { get; set; }
-        public string WardName { get; set; } = string.Empty;
-        public List<string> ImageUrls { get; set; } = new List<string>();
-        public List<RoomDetailDTO> Rooms { get; set; } = new List<RoomDetailDTO>();
-        public DateTime? CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-    }
-
-    public class RoomDetailDTO
-    {
-        public int RoomId { get; set; }
-        public string RoomTypeName { get; set; } = string.Empty;
-        public float? AreaM2 { get; set; }
-        public decimal? Price { get; set; }
-        public bool? IsAvailable { get; set; }
-        public string? Description { get; set; }
-        public List<string> ImageUrls { get; set; } = new List<string>();
-    }
     public class WardDTO
     {
         public int WardId { get; set; }
