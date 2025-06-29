@@ -1,5 +1,6 @@
 ﻿using HolaMy.Core.DTOs.BuildingDTOs;
 using HolaMyFrontend.Models;
+using HolaMyFrontend.Models.AmenityDTOs;
 using HolaMyFrontend.Models.BuildingDTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -20,6 +21,7 @@ namespace HolaMyFrontend.Pages.Buildings
         }
 
         public BuildingDetailDTO Building { get; set; } = new BuildingDetailDTO();
+        public List<AmenityListDTO> AmenityListDTO { get; set; } = new List<AmenityListDTO>();
         public string ErrorMessage { get; set; }
 
         public async Task OnGetAsync(int id)
@@ -48,6 +50,12 @@ namespace HolaMyFrontend.Pages.Buildings
                 else
                 {
                     ErrorMessage = $"Lỗi khi gọi API: {response.StatusCode}";
+                }
+                var amenityResponse = await client.GetAsync("/Admin/AmenityManagement/All");
+                if (amenityResponse.IsSuccessStatusCode)
+                {
+                    var amenityApiResponse = await amenityResponse.Content.ReadFromJsonAsync<IEnumerable<AmenityListDTO>>();
+                    AmenityListDTO = amenityApiResponse?.ToList() ?? new List<AmenityListDTO>();
                 }
             }
             catch (Exception ex)

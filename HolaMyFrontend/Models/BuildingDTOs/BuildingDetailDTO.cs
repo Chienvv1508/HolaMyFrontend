@@ -20,6 +20,8 @@ namespace HolaMy.Core.DTOs.BuildingDTOs
         public List<BuildingImageDTO> BuildingImages { get; set; } = new List<BuildingImageDTO>();
         public List<RoomDTO> Rooms { get; set; } = new List<RoomDTO>();
         public ProviderDTO Provider { get; set; }
+        public decimal? MinPrice { get; set; }
+        public decimal? MaxPrice { get; set; }
     }
     public class ProviderDTO
     {
