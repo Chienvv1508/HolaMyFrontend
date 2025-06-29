@@ -13,17 +13,14 @@
     </ol>
 </div>
 <!-- Single Page Header End -->
-
 <!-- Fruits Shop Start-->
 <div class="container-fluid fruite py-5">
     <div class="container py-5">
-        <h1 class="mb-4">Tìm nhà trọ phù hợp</h1>
         <div class="row g-4">
             <div class="col-lg-12">
                 <div class="row g-4">
                     <div class="col-xl-3">
                         <form id="search-form" method="get" asp-page="./BuildingList">
-                            <input type="hidden" name="roomTypeId" value="@Model.RoomTypeId" />
                             <div class="input-group w-100 mx-auto d-flex">
                                 <input type="search" name="search" class="form-control p-3" placeholder="Tìm kiếm tên nhà trọ" aria-describedby="search-icon-1" value="@Model.Search">
                                 <button type="submit" id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></button>
@@ -35,7 +32,7 @@
                         <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
                             <label for="sortBy">Sắp xếp theo:</label>
                             <select id="sortBy" name="sortBy" class="border-0 form-select-sm bg-light me-3" onchange="this.form.submit()" form="search-form">
-                                <option value=""  selected = "@(string.IsNullOrEmpty(Model.SortBy) ? "selected" : "")">Mặc định</option>
+                                <option value="" selected="@(string.IsNullOrEmpty(Model.SortBy) ? "selected" : "")">Mặc định</option>
                                 <option value="price-asc" selected="@(Model.SortBy == "price-asc" ? "selected" : "")">Giá tăng dần</option>
                                 <option value="price-desc" selected="@(Model.SortBy == "price-desc" ? "selected" : "")">Giá giảm dần</option>
                                 <option value="name-asc" selected="@(Model.SortBy == "name-asc" ? "selected" : "")">Tên A-Z</option>
@@ -45,92 +42,196 @@
                 </div>
                 <div class="row g-4">
                     <div class="col-lg-3">
-                        <div class="row g-4">
-                            <!-- Bộ lọc phường/xã -->
-                            <div class="col-lg-12">
-                                <div class="mb-3">
-                                    <h4>Phường/Xã</h4>
-                                    <select name="wardId" class="form-select" onchange="this.form.submit()" form="search-form">
-                                        <option value="" selected>Tất cả</option>
-
-                                        @foreach (var ward in Model.Wards)
+                        <!-- Bộ lọc của bạn -->
+                        <div class="mb-3">
+                            <h4 class="mb-2">Bộ lọc của bạn</h4>
+                            <div class="d-flex flex-wrap gap-2">
+                                @if (Model.WardIds != null && Model.WardIds.Any())
+                                {
+                                    foreach (var wardId in Model.WardIds)
+                                    {
+                                        var ward = Model.Wards.FirstOrDefault(w => w.WardId == wardId);
+                                        if (ward != null)
                                         {
-                                            <option value="@ward.WardId" selected="@(Model.WardId == ward.WardId ? "selected" : "")">@ward.WardName</option>
+                                            <span class="badge bg-secondary text-white rounded-pill py-2 px-3 filter-tag" data-type="wardIds" data-value="@ward.WardId" data-checkbox-id="ward_@ward.WardId">
+                                                @ward.WardName <i class="fa fa-times ms-2"></i>
+                                            </span>
                                         }
-                                    </select>
-                                </div>
+                                    }
+                                }
+                                @if (Model.RoomTypeIds != null && Model.RoomTypeIds.Any())
+                                {
+                                    foreach (var roomTypeId in Model.RoomTypeIds)
+                                    {
+                                        var roomType = Model.RoomTypeListDTO.FirstOrDefault(rt => rt.RoomTypeId == roomTypeId);
+                                        if (roomType != null)
+                                        {
+                                            <span class="badge bg-secondary text-white rounded-pill py-2 px-3 filter-tag" data-type="roomTypeIds" data-value="@roomType.RoomTypeId" data-checkbox-id="roomType_@roomType.RoomTypeId">
+                                                @roomType.RoomTypeName <i class="fa fa-times ms-2"></i>
+                                            </span>
+                                        }
+                                    }
+                                }
+                                @if (Model.PriceRanges != null && Model.PriceRanges.Any())
+                                {
+                                    foreach (var priceRange in Model.PriceRanges)
+                                    {
+                                        var priceLabel = priceRange switch
+                                        {
+                                            "0-1000000" => "Dưới 1 triệu",
+                                            "1000000-2000000" => "Từ 1 - 2 triệu",
+                                            "2000000-3000000" => "Từ 2 - 3 triệu",
+                                            "3000000-5000000" => "Từ 3 - 5 triệu",
+                                            "5000000-7000000" => "Từ 5 - 7 triệu",
+                                            "7000000-10000000" => "Từ 7 - 10 triệu",
+                                            "10000000-999999999" => "Trên 10 triệu",
+                                            _ => priceRange
+                                        };
+                                        <span class="badge bg-secondary text-white rounded-pill py-2 px-3 filter-tag" data-type="priceRanges" data-value="@priceRange" data-checkbox-id="price@(priceRange switch { "0-1000000" => "1", "1000000-2000000" => "2", "2000000-3000000" => "3", "3000000-5000000" => "4", "5000000-7000000" => "5", "7000000-10000000" => "6", "10000000-999999999" => "7", _ => "" })">
+                                            @priceLabel <i class="fa fa-times ms-2"></i>
+                                        </span>
+                                    }
+                                }
+                                @if (Model.AmenityIds != null && Model.AmenityIds.Any())
+                                {
+                                    foreach (var amenityId in Model.AmenityIds)
+                                    {
+                                        var amenity = Model.AmenityListDTO.FirstOrDefault(a => a.AmenityId == amenityId);
+                                        if (amenity != null)
+                                        {
+                                            <span class="badge bg-secondary text-white rounded-pill py-2 px-3 filter-tag" data-type="amenityIds" data-value="@amenity.AmenityId" data-checkbox-id="amenity_@amenity.AmenityId">
+                                                @amenity.Name <i class="fa fa-times ms-2"></i>
+                                            </span>
+                                        }
+                                    }
+                                }
+                                @if (!(Model.WardIds?.Any() ?? false) && !(Model.RoomTypeIds?.Any() ?? false) && !(Model.PriceRanges?.Any() ?? false) && !(Model.AmenityIds?.Any() ?? false))
+                                {
+                                    <p class="text-muted">Chưa có bộ lọc nào được chọn.</p>
+                                }
                             </div>
+                        </div>
+                        <hr class="filter-divider">
+                        <div class="row g-4">
+                            <!-- Bộ lọc phường/xã (không collapse) -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
-                                    <h4>Categories</h4>
-                                    <ul class="list-unstyled fruite-categorie">
-                                        <li>
-                                            <div class="d-flex justify-content-between fruite-name">
-                                                <a href="#"><i class="fas fa-apple-alt me-2"></i>Apples</a>
-                                                <span>(3)</span>
+                                    <h4 class="mb-2">Phường/Xã</h4>
+                                    <div class="ward-list">
+                                        @for (int i = 0; i < Model.Wards.Count; i++)
+                                        {
+                                            var ward = Model.Wards[i];
+                                            <div class="form-check @(i >= 5 ? "ward-hidden" : "")">
+                                                <input class="form-check-input" type="checkbox" name="wardIds" value="@ward.WardId" id="ward_@ward.WardId"
+                                                @(Model.WardIds != null && Model.WardIds.Contains(ward.WardId) ? "checked" : "")
+                                                       onchange="this.form.submit()" form="search-form">
+                                                <label class="form-check-label" for="ward_@ward.WardId">@ward.WardName</label>
                                             </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex justify-content-between fruite-name">
-                                                <a href="#"><i class="fas fa-apple-alt me-2"></i>Oranges</a>
-                                                <span>(5)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex justify-content-between fruite-name">
-                                                <a href="#"><i class="fas fa-apple-alt me-2"></i>Strawbery</a>
-                                                <span>(2)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex justify-content-between fruite-name">
-                                                <a href="#"><i class="fas fa-apple-alt me-2"></i>Banana</a>
-                                                <span>(8)</span>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex justify-content-between fruite-name">
-                                                <a href="#"><i class="fas fa-apple-alt me-2"></i>Pumpkin</a>
-                                                <span>(5)</span>
-                                            </div>
-                                        </li>
-                                    </ul>
+                                        }
+                                    </div>
+                                    @if (Model.Wards.Count > 5)
+                                    {
+                                        <a href="#" class="show-more-wards" data-visible="5">Hiển thị thêm 5</a>
+                                    }
                                 </div>
                             </div>
+                            <hr class="filter-divider">
+                            <!-- Bộ lọc loại phòng (không collapse) -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
-                                    <h4 class="mb-2">Price</h4>
-                                    <input type="range" class="form-range w-100" id="rangeInput" name="rangeInput" min="0" max="500" value="0" oninput="amount.value=rangeInput.value">
-                                    <output id="amount" name="amount" min-velue="0" max-value="500" for="rangeInput">0</output>
+                                    <h4 class="mb-2">Loại phòng</h4>
+                                    @foreach (var roomType in Model.RoomTypeListDTO)
+                                    {
+                                        <div class="d-flex justify-content-between fruite-name">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="roomTypeIds" value="@roomType.RoomTypeId" id="roomType_@roomType.RoomTypeId"
+                                                @(Model.RoomTypeIds != null && Model.RoomTypeIds.Contains(roomType.RoomTypeId) ? "checked" : "")
+                                                        onchange="this.form.submit()" form="search-form">
+                                                <label class="form-check-label" for="roomType_@roomType.RoomTypeId">@roomType.RoomTypeName</label>
+                                            </div>
+                                            <span>(@roomType.RoomCount)</span>
+                                        </div>
+                                    }
                                 </div>
                             </div>
+                            <hr class="filter-divider">
+                            <!-- Bộ lọc khoảng giá (không collapse) -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
-                                    <h4>Additional</h4>
-                                    <div class="mb-2">
-                                        <input type="radio" class="me-2" id="Categories-1" name="Categories-1" value="Beverages">
-                                        <label for="Categories-1"> Organic</label>
-                                    </div>
-                                    <div class="mb-2">
-                                        <input type="radio" class="me-2" id="Categories-2" name="Categories-1" value="Beverages">
-                                        <label for="Categories-2"> Fresh</label>
-                                    </div>
-                                    <div class="mb-2">
-                                        <input type="radio" class="me-2" id="Categories-3" name="Categories-1" value="Beverages">
-                                        <label for="Categories-3"> Sales</label>
-                                    </div>
-                                    <div class="mb-2">
-                                        <input type="radio" class="me-2" id="Categories-4" name="Categories-1" value="Beverages">
-                                        <label for="Categories-4"> Discount</label>
-                                    </div>
-                                    <div class="mb-2">
-                                        <input type="radio" class="me-2" id="Categories-5" name="Categories-1" value="Beverages">
-                                        <label for="Categories-5"> Expired</label>
+                                    <h4 class="mb-2">Khoảng giá</h4>
+                                    <div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="0-1000000" id="price1"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("0-1000000") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price1">Dưới 1 triệu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="1000000-2000000" id="price2"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("1000000-2000000") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price2">Từ 1 - 2 triệu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="2000000-3000000" id="price3"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("2000000-3000000") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price3">Từ 2 - 3 triệu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="3000000-5000000" id="price4"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("3000000-5000000") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price4">Từ 3 - 5 triệu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="5000000-7000000" id="price5"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("5000000-7000000") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price5">Từ 5 - 7 triệu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="7000000-10000000" id="price6"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("7000000-10000000") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price6">Từ 7 - 10 triệu</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="priceRanges" value="10000000-999999999" id="price7"
+                                            @(Model.PriceRanges != null && Model.PriceRanges.Contains("10000000-999999999") ? "checked" : "")
+                                                   onchange="this.form.submit()" form="search-form">
+                                            <label class="form-check-label" for="price7">Trên 10 triệu</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                            <hr class="filter-divider">
+                            <!-- Bộ lọc tiện ích (không collapse, hiển thị 5 đầu tiên) -->
                             <div class="col-lg-12">
-                                <h4 class="mb-3">Featured products</h4>
+                                <div class="mb-3">
+                                    <h4 class="mb-2">Tiện ích</h4>
+                                    <div class="amenity-list">
+                                        @for (int i = 0; i < Model.AmenityListDTO.Count; i++)
+                                        {
+                                            var amenity = Model.AmenityListDTO[i];
+                                            <div class="form-check @(i >= 5 ? "amenity-hidden" : "")">
+                                                <input class="form-check-input" type="checkbox" name="amenityIds" value="@amenity.AmenityId" id="amenity_@amenity.AmenityId"
+                                                @(Model.AmenityIds != null && Model.AmenityIds.Contains(amenity.AmenityId) ? "checked" : "")
+                                                       onchange="this.form.submit()" form="search-form">
+                                                <label class="form-check-label" for="amenity_@amenity.AmenityId">@amenity.Name</label>
+                                            </div>
+                                        }
+                                    </div>
+                                    @if (Model.AmenityListDTO.Count > 5)
+                                    {
+                                        <a href="#" class="show-more-amenities" data-visible="5">Hiển thị thêm 5</a>
+                                    }
+                                </div>
+                            </div>
+                            <hr class="filter-divider">
+                            <!-- Các phần còn lại như Nổi bật, Banner, v.v. -->
+                            <div class="col-lg-12">
+                                <h4 class="mb-3">Nổi bật</h4>
                                 <div class="d-flex align-items-center justify-content-start">
                                     <div class="rounded me-4" style="width: 100px; height: 100px;">
                                         <img src="img/featur-1.jpg" class="img-fluid rounded" alt="">
@@ -150,58 +251,22 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center justify-content-start">
-                                    <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                        <img src="img/featur-2.jpg" class="img-fluid rounded" alt="">
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-2">Big Banana</h6>
-                                        <div class="d-flex mb-2">
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star"></i>
-                                        </div>
-                                        <div class="d-flex mb-2">
-                                            <h5 class="fw-bold me-2">2.99 $</h5>
-                                            <h5 class="text-danger text-decoration-line-through">4.11 $</h5>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center justify-content-start">
-                                    <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                        <img src="img/featur-3.jpg" class="img-fluid rounded" alt="">
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-2">Big Banana</h6>
-                                        <div class="d-flex mb-2">
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star text-secondary"></i>
-                                            <i class="fa fa-star"></i>
-                                        </div>
-                                        <div class="d-flex mb-2">
-                                            <h5 class="fw-bold me-2">2.99 $</h5>
-                                            <h5 class="text-danger text-decoration-line-through">4.11 $</h5>
-                                        </div>
-                                    </div>
-                                </div>
                                 <div class="d-flex justify-content-center my-4">
-                                    <a href="#" class="btn border border-secondary px-4 py-3 rounded-pill text-primary w-100">Vew More</a>
+                                    <a href="#" class="btn border border-secondary px-4 py-3 rounded-pill text-primary w-100">Xem thêm</a>
                                 </div>
                             </div>
                             <div class="col-lg-12">
                                 <div class="position-relative">
-                                    <img src="img/banner-fruits.jpg" class="img-fluid w-100 rounded" alt="">
+                                    <img src="~/img/banner.jpg" class="img-fluid w-100 rounded" alt="">
                                     <div class="position-absolute" style="top: 50%; right: 10px; transform: translateY(-50%);">
-                                        <h3 class="text-secondary fw-bold">Fresh <br> Fruits <br> Banner</h3>
+                                        <h3 class="text-secondary fw-bold">Holamy <br> Banner</h3>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Danh sách nhà trọ -->
                     <div class="col-lg-9">
                         <div class="row g-4 justify-content-center">
                             @if (Model.Buildings.Any())
@@ -209,25 +274,74 @@
                                 foreach (var building in Model.Buildings)
                                 {
                                     <div class="col-md-6 col-lg-6 col-xl-4">
-                                        <div class="rounded position-relative fruite-item">
-                                            <div class="fruite-img">
-                                                <img src="@building.ThumbnailUrl" class="img-fluid w-100 rounded-top" alt="@building.BuildingName" onerror="this.src='/img/placeholder.jpg'" />
-                                            </div>
-                                            <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">@building.WardName</div>
-                                            <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                                <h4>@building.BuildingName</h4>
-                                                <p class="description">Giá từ: @(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
-                                                <p class="description">Cập nhật: @building.UpdatedHoursBefore giờ trước</p>
-                                                <div class="d-flex justify-content-between flex-lg-wrap">
-                                                    <a href="/Buildings/BuildingDetail/@building.BuildingId" class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                        <i class="fa fa-eye me-2 text-primary"></i> Xem chi tiết
-                                                    </a>
-                                                    <button class="btn border border-secondary rounded-pill px-3 text-primary favorite-btn" data-building-id="@building.BuildingId" onclick="toggleFavorite(@building.BuildingId)">
-                                                        <i class="fa fa-heart me-2" id="heart-icon-@building.BuildingId"></i>
-                                                    </button>
+                                        <a href="/Buildings/BuildingDetail/@building.BuildingId" class="text-decoration-none">
+                                            <div class="rounded position-relative fruite-item" style="cursor: pointer;">
+                                                <div class="fruite-img" style="height: 200px; overflow: hidden; position: relative;">
+                                                    <img src="@building.ThumbnailUrl" class="img-fluid w-100 rounded-top main-img" alt="@building.BuildingName" onerror="this.src='/img/placeholder.jpg'" style="object-fit: cover; height: 100%;" />
+                                                    @if (building.Images != null && building.Images.Any())
+                                                    {
+                                                        <div class="image-slider" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; overflow: hidden;">
+                                                            @foreach (var image in building.Images)
+                                                            {
+                                                                <img src="@image" class="img-fluid w-100 rounded-top slider-img" alt="@building.BuildingName" style="object-fit: cover; height: 100%; flex: 0 0 100%; display: none;" onerror="this.src='/img/placeholder.jpg'" />
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">@building.WardName</div>
+                                                <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                                    <h5 class="building-name">@building.BuildingName</h5>
+                                                    @if (building.Rating.HasValue)
+                                                    {
+                                                        <div class="d-flex mb-2">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                if (i <= Math.Floor(building.Rating.Value))
+                                                                {
+                                                                    <i class="fa fa-star text-warning"></i>
+                                                                }
+                                                                else if (i <= Math.Ceiling(building.Rating.Value) && building.Rating.Value % 1 > 0)
+                                                                {
+                                                                    <i class="fa fa-star-half-alt text-warning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="fa fa-star text-secondary"></i>
+                                                                }
+                                                            }
+                                                            <span class="ms-2 text-muted">(@building.Rating.Value.ToString("0.0"))</span>
+                                                        </div>
+                                                    }
+                                                    <p class="text-success fw-bold fs-5 mb-2">@(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
+                                                    <p class="description mb-2 text-dark">
+                                                        <i class="fa fa-map-marker-alt me-2 text-primary"></i>
+                                                        @(string.IsNullOrEmpty(building.Address) ? building.WardName : building.Address)
+                                                    </p>
+                                                    <p class="description mb-2 text-dark">
+                                                        Cập nhật:
+                                                        @{
+                                                            if (building.UpdatedHoursBefore <= 24)
+                                                            {
+                                                                @($"{building.UpdatedHoursBefore} giờ trước")
+                                                            }
+                                                            else if (building.UpdatedHoursBefore <= 24 * 30)
+                                                            {
+                                                                @($"{building.UpdatedHoursBefore / 24} ngày trước")
+                                                            }
+                                                            else
+                                                            {
+                                                                @($"{building.UpdatedHoursBefore / (24 * 30)} tháng trước")
+                                                            }
+                                                        }
+                                                    </p>
+                                                    <div class="d-flex justify-content-end flex-lg-wrap">
+                                                        <a href="#" class="btn border border-secondary rounded-pill px-3 text-primary" onclick="startChat(@building.BuildingId)">
+                                                            <i class="fa fa-comment me-2 text-primary"></i> Liên hệ
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </a>
                                     </div>
                                 }
                             }
@@ -239,19 +353,172 @@
                             }
                             <div class="col-12">
                                 <div class="pagination d-flex justify-content-center mt-5">
-                                    <a href="?page=@(Model.CurrentPage - 1)&search=@Model.Search&sortBy=@Model.SortBy&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&roomTypeId=@Model.RoomTypeId&wardId=@Model.WardId" class="rounded @(Model.CurrentPage == 1 ? "disabled" : "")">«</a>
+                                    <a href="?page=@(Model.CurrentPage - 1)&search=@Model.Search&sortBy=@Model.SortBy&@string.Join("&", Model.WardIds?.Select(id => $"wardIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.RoomTypeIds?.Select(id => $"roomTypeIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.PriceRanges?.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}") ?? Array.Empty<string>())&@string.Join("&", Model.AmenityIds?.Select(id => $"amenityIds={id}") ?? Array.Empty<string>())" class="rounded @(Model.CurrentPage == 1 ? "disabled" : "")">«</a>
                                     @for (int i = 1; i <= Model.TotalPages; i++)
                                     {
-                                        <a href="?page=@i&search=@Model.Search&sortBy=@Model.SortBy&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&roomTypeId=@Model.RoomTypeId&wardId=@Model.WardId" class="rounded @(Model.CurrentPage == i ? "active" : "")">@i</a>
+                                        <a href="?page=@i&search=@Model.Search&sortBy=@Model.SortBy&@string.Join("&", Model.WardIds?.Select(id => $"wardIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.RoomTypeIds?.Select(id => $"roomTypeIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.PriceRanges?.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}") ?? Array.Empty<string>())&@string.Join("&", Model.AmenityIds?.Select(id => $"amenityIds={id}") ?? Array.Empty<string>())" class="rounded @(Model.CurrentPage == i ? "active" : "")">@i</a>
                                     }
-                                    <a href="?page=@(Model.CurrentPage + 1)&search=@Model.Search&sortBy=@Model.SortBy&minPrice=@Model.MinPrice&maxPrice=@Model.MaxPrice&roomTypeId=@Model.RoomTypeId&wardId=@Model.WardId" class="rounded @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">»</a>
+                                    <a href="?page=@(Model.CurrentPage + 1)&search=@Model.Search&sortBy=@Model.SortBy&@string.Join("&", Model.WardIds?.Select(id => $"wardIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.RoomTypeIds?.Select(id => $"roomTypeIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.PriceRanges?.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}") ?? Array.Empty<string>())&@string.Join("&", Model.AmenityIds?.Select(id => $"amenityIds={id}") ?? Array.Empty<string>())" class="rounded @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">»</a>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- CSS bổ sung -->
+                    <style>
+                        .fruite-img {
+                            position: relative;
+                            overflow: hidden;
+                        }
+
+                        .image-slider {
+                            display: flex;
+                            transition: transform 0.5s ease-in-out;
+                        }
+
+                        .fruite-img:hover .image-slider {
+                            transform: translateX(-100%);
+                        }
+
+                        .fruite-img:hover .slider-img:first-child {
+                            display: block;
+                        }
+
+                        .fruite-img:hover .main-img {
+                            display: none;
+                        }
+
+                        .building-name {
+                            display: -webkit-box;
+                            -webkit-line-clamp: 1;
+                            -webkit-box-orient: vertical;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            line-height: 1.5em;
+                            min-height: 1.5em; /* Cố định 1 dòng */
+                            max-height: 1.5em; /* Giới hạn tối đa 1 dòng */
+                            margin-bottom: 0.5rem;
+                            font-size: 1.25rem; /* fs-5, nhỏ hơn h4 */
+                        }
+                    </style>
+
+                    <!-- JavaScript cho hiệu ứng ảnh -->
+                    <script>
+                        document.querySelectorAll('.fruite-img').forEach(container => {
+                            const slider = container.querySelector('.image-slider');
+                            if (slider) {
+                                const images = slider.querySelectorAll('.slider-img');
+                                let currentIndex = 0;
+
+                                container.addEventListener('mouseenter', () => {
+                                    images[0].style.display = 'block'; // Hiển thị ảnh đầu tiên khi hover
+                                    let interval = setInterval(() => {
+                                        if (currentIndex < images.length - 1) {
+                                            currentIndex++;
+                                            slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                                        } else {
+                                            currentIndex = 0;
+                                            slider.style.transform = 'translateX(0)';
+                                        }
+                                    }, 1000); // Chuyển ảnh mỗi 1 giây
+
+                                    container.addEventListener('mouseleave', () => {
+                                        clearInterval(interval);
+                                        slider.style.transform = 'translateX(0)';
+                                        images.forEach(img => img.style.display = 'none');
+                                        currentIndex = 0;
+                                    }, { once: true });
+                                });
+                            }
+                        });
+
+                        // Hàm placeholder cho chat (cần thay thế bằng logic thực tế)
+                        function startChat(buildingId) {
+                            alert('Bắt đầu chat cho nhà trọ ID: ' + buildingId);
+                            // Thay bằng logic chat thực tế, ví dụ: mở modal hoặc chuyển hướng
+                        }
+                    </script>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <!-- Fruits Shop End-->
+<!-- CSS để thêm đường thẳng mảnh, hover màu xanh và thẻ bộ lọc -->
+<style>
+    .filter-divider {
+        border: 0;
+        border-top: 1px solid #e0e0e0;
+        margin: 1rem 0;
+    }
+
+    .form-check-input:hover {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+
+    .ward-hidden, .amenity-hidden {
+        display: none;
+    }
+
+    .show-more-wards, .show-more-amenities {
+        color: #007bff;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+    }
+
+        .show-more-wards:hover, .show-more-amenities:hover {
+            text-decoration: underline;
+        }
+
+    .filter-tag {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .filter-tag:hover {
+            background-color: #6c757d !important;
+        }
+</style>
+
+<!-- JavaScript để xử lý hiển thị thêm wards, amenities và xóa bộ lọc -->
+<script>
+    // Hàm xử lý hiển thị thêm (chung cho wards và amenities)
+    function handleShowMore(linkSelector, listSelector, hiddenClass) {
+        document.querySelector(linkSelector)?.addEventListener('click', function (e) {
+            e.preventDefault();
+            const visibleCount = parseInt(this.getAttribute('data-visible'));
+            const items = document.querySelectorAll(`${listSelector} .form-check`);
+            const nextCount = Math.min(visibleCount + 5, items.length);
+
+            for (let i = visibleCount; i < nextCount; i++) {
+                items[i].classList.remove(hiddenClass);
+            }
+
+            this.setAttribute('data-visible', nextCount);
+            if (nextCount >= items.length) {
+                this.style.display = 'none';
+            } else {
+                this.textContent = `Hiển thị thêm ${Math.min(5, items.length - nextCount)}`;
+            }
+        });
+    }
+
+    // Gọi hàm cho wards và amenities
+    handleShowMore('.show-more-wards', '.ward-list', 'ward-hidden');
+    handleShowMore('.show-more-amenities', '.amenity-list', 'amenity-hidden');
+
+    // Xử lý xóa bộ lọc khi nhấp vào thẻ
+    document.querySelectorAll('.filter-tag').forEach(tag => {
+        tag.addEventListener('click', function () {
+            const checkboxId = this.getAttribute('data-checkbox-id');
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) {
+                checkbox.checked = false; // Bỏ chọn checkbox
+                document.getElementById('search-form').submit(); // Gửi lại form
+            }
+        });
+    });
+</script>

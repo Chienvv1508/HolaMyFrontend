@@ -6,8 +6,11 @@
         public int ProviderId { get; set; }
         public string BuildingName { get; set; } = null!;
         public string ThumbnailUrl { get; set; } = null!;
+        public List<string> Images { get; set; }
         public decimal? DisplayPrice { get; set; } // Giá thấp nhất của phòng trong tòa nhà
         public string WardName { get; set; }
+        public string Address { get; set; }
+        public float? Rating { get; set; }
         public int UpdatedHoursBefore { get; set; }
     }
 
