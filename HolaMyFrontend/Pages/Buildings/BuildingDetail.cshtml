@@ -2,21 +2,6 @@
 @model HolaMyFrontend.Pages.Buildings.BuildingDetailModel
 @{
     ViewData["Title"] = Model.Building.BuildingName ?? "Chi tiết tòa nhà";
-    // Define all possible amenities
-    var allAmenities = new List<(int Id, string Name, string Description)> {
-        (1, "Điều hòa", "Phòng có máy lạnh"),
-        (2, "Máy giặt", "Có máy giặt trong tòa nhà"),
-        (3, "Có kệ bếp", "Phòng được trang bị kệ bếp"),
-        (4, "Wifi", "Có wifi miễn phí"),
-        (5, "Bãi đỗ xe", "Có chỗ để xe máy"),
-        (6, "An ninh", "Bảo vệ 24/7"),
-        (7, "Có thang máy", "Tòa nhà có thang máy"),
-        (8, "Không chung chủ", "Không ở cùng chủ nhà"),
-        (9, "Giờ giấc tự do", "Không giới hạn giờ giấc"),
-        (10, "Ban công", "Phòng có ban công"),
-        (11, "Có gác", "Phòng có gác lửng"),
-        (12, "Có hầm để xe", "Tòa nhà có hầm để xe")
-    };
 }
 
 <!-- Toast Notification Container -->
@@ -45,12 +30,7 @@
                     <!-- Hình ảnh chính của tòa nhà -->
                     <div class="col-lg-6">
                         <div class="border rounded overflow-hidden">
-                            <form action="/view-image" method="GET">
-                                <input type="hidden" name="imageUrl" value="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")">
-                                <button type="submit" class="btn p-0 border-0">
-                                    <img id="main-image" src="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded main-image" alt="@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")" style="transition: all 0.3s ease-in-out;">
-                                </button>
-                            </form>
+                            <img id="main-image" src="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded main-image" alt="@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")" style="transition: all 0.3s ease-in-out; cursor: pointer;">
                             <!-- Danh sách ảnh nhỏ từ buildingImages và room images -->
                             <div class="d-flex flex-wrap mt-2">
                                 @foreach (var image in Model.Building.BuildingImages)
@@ -70,7 +50,7 @@
 
                     <!-- Thông tin tòa nhà -->
                     <div class="col-lg-6">
-                        <h5 class="building-name fw-bold mb-3">@(Model.Building.BuildingName ?? "Không xác định")</h5>
+                        <h5 class="building-name fw-bold fs-3 mb-3">@(Model.Building.BuildingName ?? "Không xác định")</h5>
                         @{
                             var minPrice = Model.Building.MinPrice;
                             var maxPrice = Model.Building.MaxPrice;
@@ -80,21 +60,21 @@
                         {
                             if (minPrice == maxPrice)
                             {
-                                <h5 class="fw-bold mb-3">@minPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) / tháng</h5>
+                                <p class="text-success fw-bold fs-3 mb-2">@minPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) / tháng</p>
                             }
                             else
                             {
-                                <h5 class="fw-bold mb-3">
+                                <p class="text-success fw-bold fs-3 mb-2">
                                     @minPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
                                     -
                                     @maxPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
                                     / tháng
-                                </h5>
+                                </p>
                             }
                         }
                         else
                         {
-                            <h5 class="fw-bold mb-3">Liên hệ để biết giá</h5>
+                            <p class="text-success fw-bold fs-3 mb-2">Liên hệ để biết giá</p>
                         }
 
                         <ul class="list-unstyled mb-3">
@@ -147,7 +127,6 @@
                                 <i class="fas fa-cart-plus me-2 text-primary"></i> Lưu vào danh sách
                             </button>
                         </form>
-
                     </div>
 
                     <!-- Mô tả và danh sách phòng -->
@@ -189,9 +168,9 @@
 
                                 <h5>Tiện ích</h5>
                                 <div class="row g-4">
-                                    @foreach (var amenity in allAmenities)
+                                    @foreach (var amenity in Model.AmenityListDTO)
                                     {
-                                        bool isAvailable = Model.Building.Rooms.Any(r => r.Amenities.Any(a => a.AmenityId == amenity.Id));
+                                        bool isAvailable = Model.Building.Rooms.Any(r => r.Amenities.Any(a => a.AmenityId == amenity.AmenityId));
                                         <div class="col-6">
                                             <div class="d-flex align-items-center @(isAvailable ? "text-success" : "text-muted")">
                                                 <i class="fas fa-check-circle me-2"></i>
@@ -268,7 +247,6 @@
                         <div class="border rounded p-3">
                             <div class="d-flex align-items-center mb-3">
                                 <img src="@(Model.Building.Provider?.Avatar ?? "/img/avatar.jpg")" class="img-fluid rounded-circle me-3" style="width: 60px; height: 60px;" alt="Provider Avatar">
-                                
                                 <div>
                                     <h5 class="mb-1">@(Model.Building.Provider?.Name ?? "Không xác định")</h5>
                                     <p class="mb-0 text-muted">Tham gia: @(Model.Building.Provider?.JoinDate.ToString("dd/MM/yyyy") ?? "N/A")</p>
@@ -284,7 +262,6 @@
                                         <i class="fas fa-comment me-2 text-primary"></i> Chat Now
                                     </button>
                                 </form>
-
                                 <button type="button" class="btn border border-secondary rounded-pill w-100 text-primary" onclick="alert('Số điện thoại: @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")')">
                                     <i class="fas fa-phone me-2 text-primary"></i> @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")
                                 </button>
@@ -311,158 +288,96 @@
                         </form>
                     </div>
                     <div class="col-lg-12">
-                        <h4 class="mb-4">Featured Listings</h4>
-                        <div class="d-flex align-items-center justify-content-start">
-                            <div class="rounded" style="width: 100px; height: 100px;">
-                                <img src="img/featur-1.jpg" class="img-fluid rounded" alt="Cozy Single Room">
-                            </div>
-                            <div>
-                                <h6 class="mb-2">Cozy Single Room</h6>
-                                <div class="d-flex mb-2">
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star"></i>
+                        <h4 class="mb-3">Mới nhất</h4>
+                        @foreach (var building in Model.FeaturedBuildings)
+                        {
+                            <div class="d-flex align-items-center justify-content-start mb-4">
+                                <div class="rounded me-4" style="width: 100px; height: 100px;">
+                                    <img src="@building.ThumbnailUrl" class="img-fluid rounded" alt="@building.BuildingName">
                                 </div>
-                                <div class="d-flex mb-2">
-                                    <h5 class="fw-bold me-2">$150 / month</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-start">
-                            <div class="rounded" style="width: 100px; height: 100px;">
-                                <img src="img/featur-2.jpg" class="img-fluid rounded" alt="Modern Apartment">
-                            </div>
-                            <div>
-                                <h6 class="mb-2">Modern Apartment</h6>
-                                <div class="d-flex mb-2">
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star"></i>
-                                </div>
-                                <div class="d-flex mb-2">
-                                    <h5 class="fw-bold me-2">$300 / month</h5>
+                                <div>
+                                    <h6 class="mb-2">@building.BuildingName</h6>
+                                    <div class="d-flex mb-2">
+                                        <i class="fa fa-star text-secondary"></i>
+                                        <i class="fa fa-star text-secondary"></i>
+                                        <i class="fa fa-star text-secondary"></i>
+                                        <i class="fa fa-star text-secondary"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                    <div class="d-flex mb-2">
+                                        <h5 class="fw-bold me-2">@(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</h5>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-start">
-                            <div class="rounded" style="width: 100px; height: 100px;">
-                                <img src="img/featur-3.jpg" class="img-fluid rounded" alt="Compact Studio">
-                            </div>
-                            <div>
-                                <h6 class="mb-2">Compact Studio</h6>
-                                <div class="d-flex mb-2">
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star text-secondary"></i>
-                                    <i class="fa fa-star"></i>
-                                </div>
-                                <div class="d-flex mb-2">
-                                    <h5 class="fw-bold me-2">$200 / month</h5>
-                                </div>
-                            </div>
-                        </div>
+                        }
                         <div class="d-flex justify-content-center my-4">
-                            <form action="/featured-listings" method="GET">
-                                <button type="submit" class="btn border border-secondary px-4 py-3 rounded-pill text-primary w-100">View More</button>
-                            </form>
+                            <a href="/Buildings/BuildingList" class="btn border border-secondary px-4 py-3 rounded-pill text-primary w-100">Xem thêm</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <h1 class="fw-bold mb-0">Related Rentals</h1>
+        <!-- Related Rentals Section -->
+        <h1 class="fw-bold mb-0">Nhà trọ liên quan</h1>
         <div class="vesitable">
             <div class="owl-carousel vegetable-carousel justify-content-center">
-                <div class="border border-primary rounded position-relative vesitable-item">
-                    <div class="vesitable-img">
-                        <img src="img/fruite-item-2.jpg" class="img-fluid w-100 rounded-top" alt="Spacious Apartment">
-                    </div>
-                    <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">Apartment</div>
-                    <div class="p-4 pb-0 rounded-bottom">
-                        <h4>Spacious Apartment</h4>
-                        <div class="d-flex mb-2">
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star"></i>
-                            <span class="ms-2 text-muted">(4.0)</span>
+                @if (Model.RelatedBuildings.Any())
+                {
+                    @foreach (var building in Model.RelatedBuildings)
+                    {
+                        <div class="border border-primary rounded position-relative vesitable-item">
+                            <div class="vesitable-img">
+                                <img src="@(building.ThumbnailUrl ?? "/img/placeholder.jpg")" class="img-fluid w-100 rounded-top" alt="@building.BuildingName">
+                            </div>
+                            <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">@building.WardName</div>
+                            <div class="p-4 pb-0 rounded-bottom">
+                                <h4 class="building-name">@building.BuildingName</h4>
+                                <div class="d-flex mb-2">
+                                    @if (building.Rating.HasValue)
+                                    {
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= Math.Floor(building.Rating.Value))
+                                            {
+                                                <i class="fa fa-star text-warning"></i>
+                                            }
+                                            else if (i <= Math.Ceiling(building.Rating.Value) && building.Rating.Value % 1 > 0)
+                                            {
+                                                <i class="fa fa-star-half-alt text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa fa-star text-secondary"></i>
+                                            }
+                                        }
+                                        <span class="ms-2 text-muted">(@building.Rating.Value.ToString("0.0"))</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Chưa có đánh giá</span>
+                                    }
+                                </div>
+                                <p class="text-muted mb-2">Địa chỉ: @(string.IsNullOrEmpty(building.Address) ? building.WardName : building.Address)</p>
+                                <div class="d-flex justify-content-between flex-lg-wrap">
+                                    <p class="text-dark fs-5 fw-bold">@(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
+                                    <form action="/Buildings/BuildingDetail" method="GET">
+                                        <input type="hidden" name="id" value="@building.BuildingId">
+                                        <button type="submit" class="btn border border-secondary rounded-pill px-3 py-1 mb-4 text-primary">
+                                            <i class="fas fa-eye me-2 text-primary"></i> Xem chi tiết
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-muted mb-2">Area: 50 m²</p>
-                        <p class="text-muted mb-2">Address: 456 Serenity Rd, City Center</p>
-                        <div class="d-flex justify-content-between flex-lg-wrap">
-                            <p class="text-dark fs-5 fw-bold">$300 / month</p>
-                            <form action="/rental-detail" method="GET">
-                                <input type="hidden" name="roomId" value="2">
-                                <button type="submit" class="btn border border-secondary rounded-pill px-3 py-1 mb-4 text-primary">
-                                    <i class="fas fa-eye me-2 text-primary"></i> View Details
-                                </button>
-                            </form>
-                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center">
+                        <p>Không có nhà trọ liên quan.</p>
                     </div>
-                </div>
-                <div class="border border-primary rounded position-relative vesitable-item">
-                    <div class="vesitable-img">
-                        <img src="img/fruite-item-3.jpg" class="img-fluid w-100 rounded-top" alt="Compact Studio">
-                    </div>
-                    <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">Studio</div>
-                    <div class="p-4 pb-0 rounded-bottom">
-                        <h4>Compact Studio</h4>
-                        <div class="d-flex mb-2">
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <span class="ms-2 text-muted">(3.5)</span>
-                        </div>
-                        <p class="text-muted mb-2">Area: 30 m²</p>
-                        <p class="text-muted mb-2">Address: 789 Campus Ln, University Area</p>
-                        <div class="d-flex justify-content-between flex-lg-wrap">
-                            <p class="text-dark fs-5 fw-bold">$200 / month</p>
-                            <form action="/rental-detail" method="GET">
-                                <input type="hidden" name="roomId" value="3">
-                                <button type="submit" class="btn border border-secondary rounded-pill px-3 py-1 mb-4 text-primary">
-                                    <i class="fas fa-eye me-2 text-primary"></i> View Details
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <div class="border border-primary rounded position-relative vesitable-item">
-                    <div class="vesitable-img">
-                        <img src="img/fruite-item-4.jpg" class="img-fluid w-100 rounded-top" alt="Shared Room">
-                    </div>
-                    <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">Shared Room</div>
-                    <div class="p-4 pb-0 rounded-bottom">
-                        <h4>Shared Room</h4>
-                        <div class="d-flex mb-2">
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star text-secondary"></i>
-                            <i class="fa fa-star"></i>
-                            <i class="fa fa-star"></i>
-                            <span class="ms-2 text-muted">(3.0)</span>
-                        </div>
-                        <p class="text-muted mb-2">Area: 20 m²</p>
-                        <p class="text-muted mb-2">Address: 321 Peace St, Suburbs</p>
-                        <div class="d-flex justify-content-between flex-lg-wrap">
-                            <p class="text-dark fs-5 fw-bold">$100 / month</p>
-                            <form action="/rental-detail" method="GET">
-                                <input type="hidden" name="roomId" value="4">
-                                <button type="submit" class="btn border border-secondary rounded-pill px-3 py-1 mb-4 text-primary">
-                                    <i class="fas fa-eye me-2 text-primary"></i> View Details
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                }
             </div>
         </div>
     </div>
@@ -496,6 +411,72 @@
             .room-type-btn.active input {
                 color: white !important;
             }
+
+    .custom-toast {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1050;
+        background: linear-gradient(90deg, #e0f7f9 50%, #a5d6a7 50%);
+        color: #1a3c34;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 15px 20px;
+        max-width: 300px;
+        font-family: Arial, sans-serif;
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+    }
+
+        .custom-toast.error {
+            background: linear-gradient(90deg, #ffebee 50%, #ef5350 50%);
+        }
+
+        .custom-toast .toast-icon {
+            width: 24px;
+            height: 24px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .custom-toast.error .toast-icon {
+            background: #ef5350;
+        }
+
+        .custom-toast .toast-icon::before {
+            content: "✔";
+            color: white;
+            font-size: 16px;
+        }
+
+        .custom-toast.error .toast-icon::before {
+            content: "✖";
+        }
+
+        .custom-toast .toast-close {
+            float: right;
+            font-size: 18px;
+            cursor: pointer;
+            color: #1a3c34;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .custom-toast .toast-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .custom-toast .toast-message {
+            font-size: 14px;
+            margin: 0;
+        }
 </style>
 
 <script>
@@ -505,14 +486,52 @@
         const roomCheckboxes = document.querySelectorAll('.room-checkbox');
         const toastContainer = document.getElementById('toastContainer');
         const apiErrorMessage = document.getElementById('apiErrorMessage');
+        const defaultBuildingImage = '@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")';
 
-        // Hiệu ứng chuyển đổi ảnh
+        // Xử lý click vào ảnh chính để mở ImageUrl trong tab mới
+        mainImage.addEventListener('click', function (e) {
+            e.preventDefault();
+            const imageUrl = this.src;
+            if (imageUrl && imageUrl !== '/img/placeholder.jpg' && imageUrl.startsWith('http')) {
+                window.open(imageUrl, '_blank');
+            } else {
+                showToast('error', 'Lỗi', 'Không tìm thấy ảnh hợp lệ.');
+            }
+        });
+
+        // Xử lý click vào thumbnail để cập nhật ảnh chính
         thumbnails.forEach(thumbnail => {
-            thumbnail.addEventListener('click', function () {
+            thumbnail.addEventListener('click', function (e) {
+                e.preventDefault();
+                // Cập nhật ảnh chính
                 mainImage.src = this.src;
-                // Bỏ chọn tất cả checkbox khi chọn ảnh tòa nhà
+                mainImage.alt = this.alt;
+
+                // Nếu click vào ảnh của tòa nhà, bỏ chọn tất cả checkbox loại phòng
                 if (this.classList.contains('building-image')) {
-                    roomCheckboxes.forEach(cb => cb.checked = false);
+                    roomCheckboxes.forEach(cb => {
+                        cb.checked = false;
+                        const label = document.querySelector(`label[for="room-${cb.value}"]`);
+                        if (label) {
+                            label.classList.remove('active');
+                        }
+                    });
+                }
+                // Nếu click vào ảnh của phòng, chọn checkbox tương ứng
+                else if (this.classList.contains('room-image')) {
+                    const roomId = this.dataset.roomId;
+                    roomCheckboxes.forEach(cb => {
+                        const isCurrent = cb.value === roomId;
+                        cb.checked = isCurrent;
+                        const label = document.querySelector(`label[for="room-${cb.value}"]`);
+                        if (label) {
+                            if (isCurrent) {
+                                label.classList.add('active');
+                            } else {
+                                label.classList.remove('active');
+                            }
+                        }
+                    });
                 }
             });
         });
@@ -520,64 +539,81 @@
         // Xử lý checkbox loại phòng
         roomCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
+                // Bỏ chọn tất cả các checkbox khác và cập nhật trạng thái active
+                roomCheckboxes.forEach(cb => {
+                    const label = document.querySelector(`label[for="room-${cb.value}"]`);
+                    if (cb !== this) {
+                        cb.checked = false;
+                        if (label) {
+                            label.classList.remove('active');
+                        }
+                    } else {
+                        if (label) {
+                            if (this.checked) {
+                                label.classList.add('active');
+                            } else {
+                                label.classList.remove('active');
+                            }
+                        }
+                    }
+                });
+
+                // Cập nhật ảnh chính khi chọn checkbox
                 if (this.checked) {
                     mainImage.src = this.dataset.thumbnail;
-                    // Bỏ chọn các checkbox khác
-                    roomCheckboxes.forEach(cb => {
-                        if (cb !== this) cb.checked = false;
-                    });
+                    mainImage.alt = `Hình ảnh phòng ${this.value}`;
                 } else {
-                    // Quay lại ảnh thumbnail tòa nhà khi bỏ chọn
-                    mainImage.src = '@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")';
+                    mainImage.src = defaultBuildingImage;
+                    mainImage.alt = '@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")';
                 }
             });
         });
 
+        // Xử lý đánh giá sao
+        const stars = document.querySelectorAll('.rating-stars i');
+        const ratingInput = document.getElementById('rating-value');
 
-    const stars = document.querySelectorAll('.rating-stars i');
-    const ratingInput = document.getElementById('rating-value');
-    const toastContainer = document.getElementById('toastContainer');
-    const apiErrorMessage = document.getElementById('apiErrorMessage');
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const rating = this.getAttribute('data-value');
+                ratingInput.value = rating;
 
-    stars.forEach(star => {
-        star.addEventListener('click', function () {
-            const rating = this.getAttribute('data-value');
-            ratingInput.value = rating;
-
-            stars.forEach(s => {
-                if (s.getAttribute('data-value') <= rating) {
-                    s.classList.remove('text-muted');
-                    s.classList.add('text-secondary');
-                } else {
-                    s.classList.remove('text-secondary');
-                    s.classList.add('text-muted');
-                }
+                stars.forEach(s => {
+                    if (s.getAttribute('data-value') <= rating) {
+                        s.classList.remove('text-muted');
+                        s.classList.add('text-secondary');
+                    } else {
+                        s.classList.remove('text-secondary');
+                        s.classList.add('text-muted');
+                    }
+                });
             });
         });
-    });
 
-    const forms = ['saveForm', 'reviewForm', 'reportForm'];
-    forms.forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) {
-            form.addEventListener('submit', function (e) {
-                setTimeout(() => {
-                    const isSuccess = Math.random() > 0.3;
-                    showToast(isSuccess ? 'success' : 'error', isSuccess ? 'Thành công' : 'Lỗi', isSuccess ? 'Hành động thành công.' : 'Có lỗi xảy ra.');
-                }, 1000);
-            });
+        // Xử lý form submit và hiển thị toast
+        const forms = ['saveForm', 'reviewForm', 'reportForm'];
+        forms.forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    setTimeout(() => {
+                        const isSuccess = Math.random() > 0.3;
+                        showToast(isSuccess ? 'success' : 'error', isSuccess ? 'Thành công' : 'Lỗi', isSuccess ? 'Hành động thành công.' : 'Có lỗi xảy ra.');
+                    }, 1000);
+                });
+            }
+        });
+
+        // Hiển thị toast nếu có lỗi API
+        if (apiErrorMessage) {
+            showToast('error', 'Lỗi', apiErrorMessage.textContent);
+            apiErrorMessage.style.display = 'none';
         }
-    });
 
-    if (apiErrorMessage) {
-        showToast('error', 'Lỗi', apiErrorMessage.textContent);
-        apiErrorMessage.style.display = 'none';
-    }
-
-    function showToast(type, title, message) {
-        const toast = document.createElement('div');
-        toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
-        toast.innerHTML = `
+        function showToast(type, title, message) {
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
+            toast.innerHTML = `
                     <span class="toast-icon"></span>
                     <div>
                         <span class="toast-title">${title}</span>
@@ -585,78 +621,16 @@
                     </div>
                     <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
                 `;
-        toastContainer.appendChild(toast);
-        toast.style.display = 'block';
+            toastContainer.appendChild(toast);
+            toast.style.display = 'block';
 
-        setTimeout(() => {
-            toast.style.opacity = '0';
             setTimeout(() => {
-                toast.style.display = 'none';
-                toastContainer.removeChild(toast);
-            }, 500);
-        }, 4500);
-    }
-        });
-
-    const style = document.createElement('style');
-    style.textContent = `
-            .custom-toast {
-                display: none;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1050;
-                background: linear-gradient(90deg, #e0f7f9 50%, #a5d6a7 50%);
-                color: #1a3c34;
-                border-radius: 10px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                padding: 15px 20px;
-                max-width: 300px;
-                font-family: Arial, sans-serif;
-                opacity: 1;
-                transition: opacity 0.5s ease-out;
-            }
-            .custom-toast.error {
-                background: linear-gradient(90deg, #ffebee 50%, #ef5350 50%);
-            }
-            .custom-toast .toast-icon {
-                width: 24px;
-                height: 24px;
-                background: #4caf50;
-                border-radius: 50%;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 10px;
-            }
-            .custom-toast.error .toast-icon {
-                background: #ef5350;
-            }
-            .custom-toast .toast-icon::before {
-                content: "✔";
-                color: white;
-                font-size: 16px;
-            }
-            .custom-toast.error .toast-icon::before {
-                content: "✖";
-            }
-            .custom-toast .toast-close {
-                float: right;
-                font-size: 18px;
-                cursor: pointer;
-                color: #1a3c34;
-                background: none;
-                border: none;
-                padding: 0;
-            }
-            .custom-toast .toast-title {
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-            .custom-toast .toast-message {
-                font-size: 14px;
-                margin: 0;
-            }
-        `;
-    document.head.appendChild(style);
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toastContainer.removeChild(toast);
+                }, 500);
+            }, 4500);
+        }
+    });
 </script>
