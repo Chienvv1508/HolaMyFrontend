@@ -73,7 +73,7 @@ namespace HolaMyFrontend.Pages.Accounts
 
             try
             {
-                var response = await client.PutAsync("http://localhost:8888/api/user/updateProfile", multiPartContent);
+                var response = await client.PutAsync("http://localhost:8888/api/User/updateProfile", multiPartContent);
                 if (!response.IsSuccessStatusCode)
                 {
                     return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
