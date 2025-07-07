@@ -1,8 +1,10 @@
 ﻿using HolaMyFrontend.Models.BuildingDTOs;
-using Microsoft.AspNetCore.Mvc;
+using HolaMyFrontend.Models.RoomTypeDTOs;
+using HolaMyFrontend.Models.AmenityDTOs;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using HolaMyFrontend.Models;
 using Microsoft.Extensions.Options;
+using HolaMyFrontend.Models;
+using HolaMy.Core.Common;
 
 namespace HolaMyFrontend.Pages.Buildings
 {
@@ -16,59 +18,89 @@ namespace HolaMyFrontend.Pages.Buildings
             _httpClientFactory = httpClientFactory;
             _apiSettings = apiSettings.Value;
         }
+
         public List<BuildingListDTO> Buildings { get; set; } = new List<BuildingListDTO>();
+        public List<BuildingListDTO> FeaturedBuildings { get; set; } = new List<BuildingListDTO>();
+        public int FeatureBuildingNumber { get; set; } = 5;
+        public List<RoomTypeListDTO> RoomTypeListDTO { get; set; } = new List<RoomTypeListDTO>();
+        public List<AmenityListDTO> AmenityListDTO { get; set; } = new List<AmenityListDTO>();
+        public List<WardDTO> Wards { get; set; } = new List<WardDTO>();
         public int CurrentPage { get; set; } = 1;
         public int PageSize { get; set; } = 12;
         public int TotalPages { get; set; } = 1;
         public string Search { get; set; } = string.Empty;
         public string SortBy { get; set; } = string.Empty;
-        public decimal? MinPrice { get; set; }
-        public decimal? MaxPrice { get; set; }
-        public int? RoomTypeId { get; set; }
-        public int? WardId { get; set; }
+        public List<int>? WardIds { get; set; }
+        public List<int>? RoomTypeIds { get; set; }
+        public List<string>? PriceRanges { get; set; }
+        public List<int>? AmenityIds { get; set; }
+        public bool WardFilterOpen { get; set; }
 
-        public List<WardDTO> Wards { get; set; } = new List<WardDTO>();
-        public async Task OnGetAsync(int page = 1, string search = null, string sortBy = null, decimal? minPrice = null, decimal? maxPrice = null, int? roomTypeId = null, int? wardId = null)
+        public async Task OnGetAsync(int page = 1, string search = null, string sortBy = null,
+            List<int> wardIds = null, List<int> roomTypeIds = null, List<string> priceRanges = null,
+            List<int> amenityIds = null, bool wardFilterOpen = false, string status = "Approved")
         {
             try
             {
                 var client = _httpClientFactory.CreateClient("ApiClient");
 
                 CurrentPage = page;
-                Search = search;
-                SortBy = sortBy;
-                MinPrice = minPrice;
-                MaxPrice = maxPrice;
-                RoomTypeId = roomTypeId;
-                WardId = wardId;
+                Search = search ?? string.Empty;
+                SortBy = sortBy ?? string.Empty;
+                WardIds = wardIds ?? new List<int>();
+                RoomTypeIds = roomTypeIds ?? new List<int>();
+                PriceRanges = priceRanges ?? new List<string>();
+                AmenityIds = amenityIds ?? new List<int>();
+                WardFilterOpen = wardFilterOpen;
 
-                // Tạo query string cho API
-                var query = $"?page={CurrentPage}&pageSize={PageSize}";
-                if (!string.IsNullOrEmpty(Search)) query += $"&search={Uri.EscapeDataString(Search)}";
-                if (!string.IsNullOrEmpty(SortBy)) query += $"&sortBy={SortBy}";
-                if (MinPrice.HasValue) query += $"&minPrice={MinPrice.Value}";
-                if (MaxPrice.HasValue) query += $"&maxPrice={MaxPrice.Value}";
-                if (RoomTypeId.HasValue) query += $"&roomTypeId={RoomTypeId.Value}";
-                if (WardId.HasValue) query += $"&wardId={WardId.Value}";
+                // Lấy danh sách tòa nhà chính
+                var queryParams = new List<string> { $"page={CurrentPage}", $"pageSize={PageSize}" };
+                if (!string.IsNullOrEmpty(status))
+                    queryParams.Add($"status={Uri.EscapeDataString(status)}");
+                if (!string.IsNullOrEmpty(Search))
+                    queryParams.Add($"search={Uri.EscapeDataString(Search)}");
+                if (!string.IsNullOrEmpty(SortBy))
+                    queryParams.Add($"sortBy={SortBy}");
+                if (WardIds.Any())
+                    queryParams.AddRange(WardIds.Select(id => $"wardIds={id}"));
+                if (RoomTypeIds.Any())
+                    queryParams.AddRange(RoomTypeIds.Select(id => $"roomTypeIds={id}"));
+                if (PriceRanges.Any())
+                    queryParams.AddRange(PriceRanges.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}"));
+                if (AmenityIds.Any())
+                    queryParams.AddRange(AmenityIds.Select(id => $"amenityIds={id}"));
 
-                // Gọi API danh sách tòa nhà
+                var query = $"?{string.Join("&", queryParams)}";
                 var response = await client.GetAsync($"api/Building/get-building-list{query}");
                 response.EnsureSuccessStatusCode();
 
-                var apiResponse = await response.Content.ReadFromJsonAsync<ResponseDTO<IEnumerable<BuildingListDTO>>>();
-                if (apiResponse != null && apiResponse.StatusCode == 200)
+                var apiResponse = await response.Content.ReadFromJsonAsync<ResponseDTO<PagedResult<BuildingListDTO>>>();
+                if (apiResponse != null && apiResponse.StatusCode == 200 && apiResponse.Data != null)
                 {
-                    Buildings = apiResponse.Data?.ToList() ?? new List<BuildingListDTO>();
-                    // Giả định API trả về tổng số bản ghi trong header hoặc cần thêm logic phân trang
-                    TotalPages = (int)Math.Ceiling((double)(Buildings.Count > 0 ? 100 : 0) / PageSize); // Thay 100 bằng tổng số bản ghi từ API
+                    Buildings = apiResponse.Data.Items ?? new List<BuildingListDTO>();
+                    TotalPages = apiResponse.Data.TotalPages;
+                    CurrentPage = apiResponse.Data.PageNumber;
+                    PageSize = apiResponse.Data.PageSize;
                 }
                 else
                 {
                     Buildings = new List<BuildingListDTO>();
+                    TotalPages = 1;
                     Console.WriteLine($"Lỗi API: {apiResponse?.Message}");
                 }
 
-                // Gọi API danh sách phường/xã
+                // Lấy 5 tòa nhà mới nhất cho phần Nổi bật
+                var featuredQuery = $"?page=1&pageSize={FeatureBuildingNumber}&status=Approved&sortBy=created-desc";
+                var featuredResponse = await client.GetAsync($"api/Building/get-building-list{featuredQuery}");
+                featuredResponse.EnsureSuccessStatusCode();
+
+                var featuredApiResponse = await featuredResponse.Content.ReadFromJsonAsync<ResponseDTO<PagedResult<BuildingListDTO>>>();
+                if (featuredApiResponse != null && featuredApiResponse.StatusCode == 200 && featuredApiResponse.Data != null)
+                {
+                    FeaturedBuildings = featuredApiResponse.Data.Items ?? new List<BuildingListDTO>();
+                }
+
+                // Lấy danh sách Ward
                 var wardResponse = await client.GetAsync("api/ward");
                 if (wardResponse.IsSuccessStatusCode)
                 {
@@ -78,11 +110,31 @@ namespace HolaMyFrontend.Pages.Buildings
                         Wards = wardApiResponse.Data?.ToList() ?? new List<WardDTO>();
                     }
                 }
+
+                // Lấy danh sách RoomType
+                var roomTypeResponse = await client.GetAsync("/Admin/RoomTypeManagement/All");
+                if (roomTypeResponse.IsSuccessStatusCode)
+                {
+                    var roomTypeApiResponse = await roomTypeResponse.Content.ReadFromJsonAsync<IEnumerable<RoomTypeListDTO>>();
+                    RoomTypeListDTO = roomTypeApiResponse?.ToList() ?? new List<RoomTypeListDTO>();
+                }
+
+                // Lấy danh sách Amenity
+                var amenityResponse = await client.GetAsync("/Admin/AmenityManagement/All");
+                if (amenityResponse.IsSuccessStatusCode)
+                {
+                    var amenityApiResponse = await amenityResponse.Content.ReadFromJsonAsync<IEnumerable<AmenityListDTO>>();
+                    AmenityListDTO = amenityApiResponse?.ToList() ?? new List<AmenityListDTO>();
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Lỗi khi gọi API: {ex.Message}");
                 Buildings = new List<BuildingListDTO>();
+                FeaturedBuildings = new List<BuildingListDTO>();
+                Wards = new List<WardDTO>();
+                RoomTypeListDTO = new List<RoomTypeListDTO>();
+                AmenityListDTO = new List<AmenityListDTO>();
             }
         }
     }
