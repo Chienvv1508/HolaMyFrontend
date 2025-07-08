@@ -266,12 +266,9 @@
                                     <i class="fas fa-phone me-2 text-primary"></i> @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")
                                 </button>
                                 <div class="d-flex gap-2">
-                                    <form action="/report-listing" method="POST" id="reportForm" class="w-50">
-                                        <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
-                                        <button type="submit" class="btn border border-secondary rounded-pill w-100 text-danger">
-                                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i> Báo xấu
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn border border-secondary rounded-pill w-50 text-danger" id="reportButton">
+                                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i> Báo xấu
+                                    </button>
                                     <button type="button" class="btn border border-secondary rounded-pill w-50 text-primary" onclick="navigator.share({title: '@(Model.Building.BuildingName ?? "Tòa nhà")', url: window.location.href})">
                                         <i class="fas fa-share-alt me-2 text-primary"></i> Chia sẻ
                                     </button>
@@ -383,8 +380,77 @@
     </div>
 </div>
 <!-- Rental Detail End -->
+<!-- Modal báo xấu -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Báo xấu chủ trọ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm" method="post" asp-page-handler="ReportLandlord" enctype="multipart/form-data">
+                    <input type="hidden" name="reportedOwnerId" value="@Model.Building.Provider?.Id">
+                    <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
+
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Lý do báo xấu <span class="text-danger">*</span></label>
+                        <select class="form-select" id="reason" name="reason" required>
+                            <option value="" disabled selected>Chọn lý do</option>
+                            <option value="Thông tin sai lệch">Thông tin sai lệch</option>
+                            <option value="Hành vi không phù hợp">Hành vi không phù hợp</option>
+                            <option value="Lừa đảo">Lừa đảo</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả chi tiết</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Mô tả vấn đề bạn gặp phải..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ảnh bằng chứng (tùy chọn, tối đa 10 ảnh, 5MB mỗi ảnh)</label>
+                        <div id="evidenceFilesContainer">
+                            <div class="input-group mb-2">
+                                <input type="file" class="form-control" name="evidenceFiles" accept="image/jpeg,image/png,image/gif" multiple>
+                                <div class="evidence-preview"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isAnonymous" name="isAnonymous">
+                        <label class="form-check-label" for="isAnonymous">Ẩn danh</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Gửi báo cáo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .input-group .form-control:invalid {
+        border-color: #dc3545;
+    }
+
+    .evidence-preview img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 5px;
+        border-radius: 5px;
+    }
+
+    .evidence-preview .error {
+        color: #dc3545;
+        font-size: 0.9em;
+    }
+
     .building-name {
         display: -webkit-box;
         -webkit-line-clamp: 1;
@@ -486,7 +552,24 @@
         const roomCheckboxes = document.querySelectorAll('.room-checkbox');
         const toastContainer = document.getElementById('toastContainer');
         const apiErrorMessage = document.getElementById('apiErrorMessage');
+        const reportButton = document.getElementById('reportButton');
+        const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
         const defaultBuildingImage = '@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")';
+        // Xử lý click vào nút Báo xấu
+        if (reportButton) {
+            reportButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                const authToken = localStorage.getItem('jwtToken');
+                if (!authToken) {
+                    showToast('error', 'Lỗi', 'Vui lòng đăng nhập để báo xấu.');
+                    setTimeout(() => {
+                        window.location.href = '/HomePage/Login'; // Điều chỉnh URL đăng nhập phù hợp
+                    }, 2000); // Chuyển hướng sau 2 giây
+                } else {
+                    reportModal.show(); // Mở modal nếu đã đăng nhập
+                }
+            });
+        }
 
         // Xử lý click vào ảnh chính để mở ImageUrl trong tab mới
         mainImage.addEventListener('click', function (e) {
@@ -590,37 +673,92 @@
             });
         });
 
-        // Xử lý form submit và hiển thị toast
-        const forms = ['saveForm', 'reviewForm', 'reportForm'];
-        forms.forEach(formId => {
-            const form = document.getElementById(formId);
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    setTimeout(() => {
-                        const isSuccess = Math.random() > 0.3;
-                        showToast(isSuccess ? 'success' : 'error', isSuccess ? 'Thành công' : 'Lỗi', isSuccess ? 'Hành động thành công.' : 'Có lỗi xảy ra.');
-                    }, 1000);
-                });
-            }
-        });
+        // Xử lý file input cho nhiều ảnh
+        const evidenceFilesContainer = document.getElementById('evidenceFilesContainer');
+        const fileInput = evidenceFilesContainer.querySelector('input[name="evidenceFiles"]');
 
-        // Hiển thị toast nếu có lỗi API
-        if (apiErrorMessage) {
-            showToast('error', 'Lỗi', apiErrorMessage.textContent);
-            apiErrorMessage.style.display = 'none';
+        function attachFileHandler(input) {
+            input.addEventListener('change', function () {
+                const previewContainer = this.parentElement.querySelector('.evidence-preview');
+                previewContainer.innerHTML = '';
+
+                const files = Array.from(this.files);
+                if (files.length > 10) {
+                    this.classList.add('is-invalid');
+                    previewContainer.innerHTML = '<span class="error">Chỉ được chọn tối đa 10 ảnh.</span>';
+                    showToast('error', 'Lỗi', 'Chỉ được chọn tối đa 10 ảnh.');
+                    return;
+                }
+
+                for (const file of files) {
+                    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                        this.classList.add('is-invalid');
+                        previewContainer.innerHTML += '<span class="error">Chỉ hỗ trợ JPEG, PNG, GIF.</span>';
+                        showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        this.classList.add('is-invalid');
+                        previewContainer.innerHTML += '<span class="error">Ảnh không được vượt quá 5MB.</span>';
+                        showToast('error', 'Lỗi', 'Ảnh không được vượt quá 5MB.');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        previewContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                this.classList.remove('is-invalid');
+            });
         }
 
+        if (fileInput) {
+            attachFileHandler(fileInput);
+        }
+
+        const reportForm = document.getElementById('reportForm');
+        if (reportForm) {
+            reportForm.addEventListener('submit', function (e) {
+                const files = fileInput.files;
+                if (files.length > 10) {
+                    e.preventDefault();
+                    showToast('error', 'Lỗi', 'Chỉ được gửi tối đa 10 ảnh.');
+                    return;
+                }
+                for (const file of files) {
+                    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                        e.preventDefault();
+                        showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        e.preventDefault();
+                        showToast('error', 'Lỗi', 'Ảnh không được vượt quá 5MB.');
+                        return;
+                    }
+                }
+                if (!reportForm.querySelector('#reason').value) {
+                    e.preventDefault();
+                    showToast('error', 'Lỗi', 'Vui lòng chọn lý do báo xấu.');
+                }
+            });
+        }
+        
         function showToast(type, title, message) {
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
             toast.innerHTML = `
-                    <span class="toast-icon"></span>
-                    <div>
-                        <span class="toast-title">${title}</span>
-                        <p class="toast-message">${message}</p>
-                    </div>
-                    <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
-                `;
+                        <span class="toast-icon"></span>
+                        <div>
+                            <span class="toast-title">${title}</span>
+                            <p class="toast-message">${message}</p>
+                        </div>
+                        <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
+                    `;
             toastContainer.appendChild(toast);
             toast.style.display = 'block';
 
