@@ -47,7 +47,7 @@ function sendOTP() {
         });
 }
 
-function verifyOTP() {
+async function verifyOTP() {
     const otp = document.getElementById('otp').value;
     const statusDiv = document.getElementById('status');
 
@@ -60,25 +60,29 @@ function verifyOTP() {
         statusDiv.textContent = 'Vui lòng gửi OTP trước!';
         return;
     }
-    window.confirmationResult.confirm(otp)
-        .then((result) => {
-            const user = result.user;
-            //const token = user.getIdToken(); 
-            //localStorage.setItem('jwtToken', token); 
+
+    try {
+        const result = await window.confirmationResult.confirm(otp);
+        const user = result.user;
+       
+
+        let isRegisterSuccess = await Register();
+        if (isRegisterSuccess) {
             statusDiv.textContent = 'Xác thực thành công! Chuyển hướng...';
             statusDiv.className = 'mt-3 text-center text-success';
-
-            Register();
-
-            //setTimeout(() => {
-            //    window.location.href = '/HomePage'; 
-            //}, 1000);
-        })
-        .catch((error) => {
-            statusDiv.textContent = 'Lỗi xác minh OTP: ' + error.message;
-            console.error('Error verifying OTP:', error);
-        });
+            setTimeout(() => {
+                window.location.href = '/HomePage/Login';
+            }, 1000);
+        } else {
+            statusDiv.classList.add("text-danger");
+            statusDiv.textContent = 'Đã tồn tại số điện thoại trong hệ thống hoặc lỗi dịch vụ đăng ký';
+        }
+    } catch (error) {
+        statusDiv.textContent = 'Lỗi xác minh OTP: ' + error.message;
+        console.error('Error verifying OTP:', error);
+    }
 }
+
 
 async function Register() {
 
@@ -86,7 +90,7 @@ async function Register() {
     const password = document.getElementById('password').value;
     const firstName = document.getElementById('firstName').value;
     const lastName = document.getElementById('lastName').value;
-    const userType = document.getElementById('userType').value;
+    const userType = 2;
     const statusDiv = document.getElementById('status');
      try {
          const response = await fetch('http://localhost:8888/api/User/register', {
@@ -98,13 +102,9 @@ async function Register() {
          }); 
          const data = await response.json();
          if (response.ok) {
-             console.log(`Data is: ${data.data}`);
-             window.location.href = `http://localhost:5050/HomePage/Login?token=${data.data}`;
+             return true;
          } else {
-             statusDiv.classList.add("text-danger");
-             statusDiv.textContent = data.message || 'Đăng ký thất bại';
-             
-           
+             return false;
          }
      } catch (error) {
 
