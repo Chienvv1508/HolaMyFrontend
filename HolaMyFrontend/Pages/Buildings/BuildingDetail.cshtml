@@ -266,7 +266,7 @@
                                     <i class="fas fa-phone me-2 text-primary"></i> @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")
                                 </button>
                                 <div class="d-flex gap-2">
-                                    <button type="button" class="btn border border-secondary rounded-pill w-50 text-danger" data-bs-toggle="modal" data-bs-target="#reportModal">
+                                    <button type="button" class="btn border border-secondary rounded-pill w-50 text-danger" id="reportButton">
                                         <i class="fas fa-exclamation-triangle me-2 text-danger"></i> Báo xấu
                                     </button>
                                     <button type="button" class="btn border border-secondary rounded-pill w-50 text-primary" onclick="navigator.share({title: '@(Model.Building.BuildingName ?? "Tòa nhà")', url: window.location.href})">
@@ -391,7 +391,7 @@
             <div class="modal-body">
                 <form id="reportForm" method="post" asp-page-handler="ReportLandlord" enctype="multipart/form-data">
                     <input type="hidden" name="reportedOwnerId" value="@Model.Building.Provider?.Id">
-                    <input type="hidden" name="reporterUserId" value="@(User.FindFirst("sub")?.Value ?? "2")">
+                    <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
 
                     <div class="mb-3">
                         <label for="reason" class="form-label">Lý do báo xấu <span class="text-danger">*</span></label>
@@ -552,7 +552,24 @@
         const roomCheckboxes = document.querySelectorAll('.room-checkbox');
         const toastContainer = document.getElementById('toastContainer');
         const apiErrorMessage = document.getElementById('apiErrorMessage');
+        const reportButton = document.getElementById('reportButton');
+        const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
         const defaultBuildingImage = '@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")';
+        // Xử lý click vào nút Báo xấu
+        if (reportButton) {
+            reportButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                const authToken = localStorage.getItem('jwtToken');
+                if (!authToken) {
+                    showToast('error', 'Lỗi', 'Vui lòng đăng nhập để báo xấu.');
+                    setTimeout(() => {
+                        window.location.href = '/HomePage/Login'; // Điều chỉnh URL đăng nhập phù hợp
+                    }, 2000); // Chuyển hướng sau 2 giây
+                } else {
+                    reportModal.show(); // Mở modal nếu đã đăng nhập
+                }
+            });
+        }
 
         // Xử lý click vào ảnh chính để mở ImageUrl trong tab mới
         mainImage.addEventListener('click', function (e) {
@@ -730,7 +747,7 @@
                 }
             });
         }
-
+        
         function showToast(type, title, message) {
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;

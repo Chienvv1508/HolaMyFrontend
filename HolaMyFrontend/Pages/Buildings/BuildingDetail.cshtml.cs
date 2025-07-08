@@ -3,6 +3,7 @@ using HolaMy.Core.DTOs.BuildingDTOs;
 using HolaMyFrontend.Models;
 using HolaMyFrontend.Models.AmenityDTOs;
 using HolaMyFrontend.Models.BuildingDTOs;
+using HolaMyFrontend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
@@ -15,11 +16,13 @@ namespace HolaMyFrontend.Pages.Buildings
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ApiSettings _apiSettings;
         private readonly ILogger<BuildingDetailModel> _logger;
-        public BuildingDetailModel(IHttpClientFactory httpClientFactory, IOptions<ApiSettings> apiSettings, ILogger<BuildingDetailModel> logger)
+        private readonly ApiClientService _apiClientService;
+        public BuildingDetailModel(IHttpClientFactory httpClientFactory, IOptions<ApiSettings> apiSettings, ILogger<BuildingDetailModel> logger, ApiClientService apiClientService)
         {
             _httpClientFactory = httpClientFactory;
             _apiSettings = apiSettings.Value;
             _logger = logger;
+            _apiClientService = apiClientService;
         }
 
         public BuildingDetailDTO Building { get; set; } = new BuildingDetailDTO();
@@ -97,21 +100,15 @@ namespace HolaMyFrontend.Pages.Buildings
             }
         }
 
-        public async Task<IActionResult> OnPostReportLandlordAsync(int reporterUserId, int buildingId, string reason, string description, bool isAnonymous, IFormFileCollection evidenceFiles)
+        public async Task<IActionResult> OnPostReportLandlordAsync(int reportedOwnerId, int buildingId, string reason, string description, bool isAnonymous, IFormFileCollection evidenceFiles)
         {
             try
             {
-                // Validate authentication
-                if (!User.Identity.IsAuthenticated || string.IsNullOrEmpty(User.FindFirst("sub")?.Value))
+                var (client, errorResult) = _apiClientService.GetAuthorizedClient();
+                if (errorResult != null)
                 {
-                    TempData["ErrorMessage"] = "Bạn cần đăng nhập để gửi báo cáo.";
-                    return RedirectToPage(new { id = buildingId });
-                }
-                string reporterUserIdFromAuth = User.FindFirst("sub")?.Value;
-                if (reporterUserId.ToString() != reporterUserIdFromAuth)
-                {
-                    TempData["ErrorMessage"] = "Thông tin người dùng không hợp lệ.";
-                    return RedirectToPage(new { id = buildingId });
+                    TempData["ErrorMessage"] = "Vui lòng đăng nhập lại.";
+                    return RedirectToPage("/HomePage/Login");
                 }
 
                 // Validate reason
@@ -121,24 +118,7 @@ namespace HolaMyFrontend.Pages.Buildings
                     TempData["ErrorMessage"] = "Lý do báo xấu không hợp lệ.";
                     return RedirectToPage(new { id = buildingId });
                 }
-
-                // Fetch building to get provider ID
-                var client = _httpClientFactory.CreateClient("ApiClient");
-                var buildingResponse = await client.GetAsync($"{_apiSettings.BaseUrl}/api/Building/get-building-detail/{buildingId}");
-                if (!buildingResponse.IsSuccessStatusCode)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy thông tin tòa nhà.";
-                    return RedirectToPage(new { id = buildingId });
-                }
-                var jsonString = await buildingResponse.Content.ReadAsStringAsync();
-                var apiResponse = JsonSerializer.Deserialize<ResponseDTO<BuildingDetailDTO>>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                if (apiResponse.Data?.Provider?.Id == null)
-                {
-                    TempData["ErrorMessage"] = "Không tìm thấy thông tin chủ trọ.";
-                    return RedirectToPage(new { id = buildingId });
-                }
-                int reportedOwnerId = apiResponse.Data.Provider.Id;
-
+                
                 // Validate file uploads
                 if (evidenceFiles.Count > 10)
                 {
@@ -147,12 +127,11 @@ namespace HolaMyFrontend.Pages.Buildings
                 }
 
                 var formData = new MultipartFormDataContent();
-                formData.Add(new StringContent(reporterUserId.ToString()), "reporterUserId");
-                formData.Add(new StringContent(reportedOwnerId.ToString()), "reportedOwnerId");
-                formData.Add(new StringContent(reason), "reason");
-                formData.Add(new StringContent(description ?? ""), "description");
-                formData.Add(new StringContent(isAnonymous.ToString()), "isAnonymous");
-
+                formData.Add(new StringContent(reportedOwnerId.ToString()), "ReportedOwnerId");
+                formData.Add(new StringContent(reason), "Reason");
+                formData.Add(new StringContent(description ?? ""), "Description");
+                formData.Add(new StringContent(isAnonymous.ToString()), "IsAnonymous");
+                
                 var allowedContentTypes = new[] { "image/jpeg", "image/png", "image/gif" };
                 foreach (var file in evidenceFiles)
                 {
@@ -171,21 +150,29 @@ namespace HolaMyFrontend.Pages.Buildings
 
                         var streamContent = new StreamContent(file.OpenReadStream());
                         streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
-                        formData.Add(streamContent, "evidenceFiles", file.FileName);
+                        formData.Add(streamContent, "EvidenceFiles", file.FileName);
                     }
                 }
 
-                // Submit report
                 var response = await client.PostAsync($"{_apiSettings.BaseUrl}/api/Report", formData);
-                var result = await response.Content.ReadFromJsonAsync<ResponseDTO<object>>();
+                var unauthorizedResult = _apiClientService.HandleUnauthorizedResponse(response);
+                if (unauthorizedResult != null)
+                {
+                    TempData["ErrorMessage"] = "Phiên đăng nhập đã hết hạn.";
+                    return RedirectToPage("/HomePage/Login");
+                }
+
+                response.EnsureSuccessStatusCode();
+                var jsonResponse = await response.Content.ReadFromJsonAsync<ResponseDTO<object>>();
+                Console.WriteLine($"OnPOSTAsync: Raw API Response: {jsonResponse}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    TempData["SuccessMessage"] = result.Message ?? "Báo cáo đã được gửi thành công.";
+                    TempData["SuccessMessage"] = "Báo cáo đã được gửi thành công.";
                 }
                 else
                 {
-                    TempData["ErrorMessage"] = result?.Message ?? "Có lỗi khi gửi báo cáo.";
+                    TempData["ErrorMessage"] = "Có lỗi khi gửi báo cáo.";
                 }
 
                 return RedirectToPage(new { id = buildingId });
