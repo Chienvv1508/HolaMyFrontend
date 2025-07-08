@@ -25,6 +25,7 @@
 
     <!-- Template Stylesheet -->
     <link href="~/css/style.css" rel="stylesheet" asp-append-version="true">
+   
 </head>
 <body>
     <!-- Spinner Start -->
@@ -34,7 +35,19 @@
     <!-- Spinner End -->
     <!-- Navbar Start -->
     <div class="container-fluid fixed-top">
-       
+        <div class="container topbar bg-primary d-none d-lg-block">
+            <div class="d-flex justify-content-between">
+                <div class="top-info ps-2">
+                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a href="#" class="text-white">123 Street, New York</a></small>
+                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">Email@Example.com</a></small>
+                </div>
+                <div class="top-link pe-2">
+                    <a href="#" class="text-white"><small class="text-white mx-2">Privacy Policy</small>/</a>
+                    <a href="#" class="text-white"><small class="text-white mx-2">Terms of Use</small>/</a>
+                    <a href="#" class="text-white"><small class="text-white ms-2">Sales and Refunds</small></a>
+                </div>
+            </div>
+        </div>
         <!-- Topbar End -->
         <div class="container px-0">
             <nav class="navbar navbar-light bg-white navbar-expand-xl">
@@ -73,7 +86,8 @@
                                     <span id="user-name" class="text-primary"></span>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end bg-secondary rounded-0 m-0" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="/Profile">Thay đổi thông tin</a></li>
+                                    <li><a class="dropdown-item" href="/Accounts/ViewProfileDetails">Xem thông tin tài khoản</a></li>
+                                    <li><a class="dropdown-item" href="/Buildings/SavedBuildingList">Đã lưu </a></li>
                                     <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
                                 </ul>
                             </div>
@@ -199,16 +213,38 @@
     <script src="~/lib/waypoints/waypoints.min.js"></script>
     <script src="~/lib/lightbox/js/lightbox.min.js"></script>
     <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
 
     <script src="~/js/main.js" asp-append-version="true"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          
+            const firebaseConfig = {
+                apiKey: "AIzaSyDNviFvnFgrC42AouVAejbLT3c_IkQIqrU",
+                authDomain: "authen-b7820.firebaseapp.com",
+                projectId: "authen-b7820",
+                storageBucket: "authen-b7820.firebasestorage.app",
+                messagingSenderId: "896193465313",
+                measurementId: "G-W3QDGZRXS7",
+                appId: "1:896193465313:web:317d5b6e9eb067da2960a0"
+            };
+            firebase.initializeApp(firebaseConfig);
+
+            
+            updateAuthUI();
+        });
+    </script>
+
+    <script>
         
-            async function fetchUserProfile() {
-                const token = localStorage.getItem('jwtToken');
+            async function fetchUserProfile(token) {
+                // const token = localStorage.getItem('jwtToken');
                 if (!token) return null;
 
                 try {
-                    const response = await fetch('http://localhost:9999/api/User/profile', {
+                    const response = await fetch('http://localhost:8888/api/User/profile', {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -227,17 +263,30 @@
                     return null;
                 }
             }
+        function getCookie(name) {
+            const cookieString = document.cookie;
+            const cookies = cookieString.split(';');
+
+            for (let cookie of cookies) {
+                const [key, value] = cookie.trim().split('=');
+                if (key === name) {
+                    return decodeURIComponent(value);
+                }
+            }
+
+            return null;
+        }
 
         async function updateAuthUI() {
-            const token = localStorage.getItem('jwtToken');
+            const token = getCookie("jwt");
             const loginBtn = document.getElementById('login-btn');
             const userProfile = document.getElementById('user-profile');
             const userAvatar = document.getElementById('user-avatar');
             const userName = document.getElementById('user-name');
 
             if (token) {
-                const user = await fetchUserProfile();
-                if (user)
+                const user = await fetchUserProfile(token);
+                if (user) { 
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
                     const fullName = `${user.firstName} ${user.lastName}`;
@@ -249,7 +298,7 @@
                         userAvatar.textContent = initial;
                     }
                 } else {
-                    localStorage.removeItem('jwtToken');
+                    // localStorage.removeItem('jwtToken');
                     loginBtn.style.display = 'flex';
                     userProfile.style.display = 'none';
                 }
@@ -260,11 +309,13 @@
         }
 
         function logout() {
-            localStorage.removeItem('jwtToken');
-            window.location.href = '/HomePage';
+            // localStorage.removeItem('jwtToken');
+            window.location.href = '/HomePage/Logout';
         }
         document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>
+    
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
