@@ -23,11 +23,9 @@ builder.Services.AddHttpClient();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-
-        options.LoginPath = "HomePage/Login";
-        options.AccessDeniedPath = "HomePage/AccessDenied";
+        options.LoginPath = "/HomePage/Login";
+        options.AccessDeniedPath = "/HomePage/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(1);
-
     });
 builder.Services.AddAuthorization();
 

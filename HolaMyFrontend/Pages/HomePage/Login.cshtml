@@ -58,14 +58,14 @@
 
     <script>
        
-        const token = '@ViewData["Token"]';
-        if (token) {
-            localStorage.setItem('jwtToken', token);
-         // Lưu token vào cookie
-        document.cookie = `jwtToken=${token}; path=/; max-age=3600; SameSite=Strict; Secure`; // Hết hạn sau 1 giờ
-            window.location.href = '/'; 
-            console.log(`Token is: ${token}`);
-        }
-        console.log('Token is null');
+        // const token = '@ViewData["Token"]';
+        // if (token) {
+        //     localStorage.setItem('jwtToken', token);
+        //  // Lưu token vào cookie
+        // document.cookie = `jwtToken=${token}; path=/; max-age=3600; SameSite=Strict; Secure`; // Hết hạn sau 1 giờ
+        //     window.location.href = '/'; 
+        //     console.log(`Token is: ${token}`);
+        // }
+        // console.log('Token is null');
 
     </script>

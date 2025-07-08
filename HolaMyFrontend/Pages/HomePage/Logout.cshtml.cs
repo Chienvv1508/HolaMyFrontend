@@ -9,9 +9,9 @@ namespace HolaMyFrontend.Pages.HomePage
     {
         public async Task<IActionResult> OnGet()
         {
-            Response.Cookies.Delete("abc");
+            Response.Cookies.Delete("jwt");
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToPage("/HomePage/Login");
+            return RedirectToPage("/Buildings/BuildingList");
         }
     }
 }

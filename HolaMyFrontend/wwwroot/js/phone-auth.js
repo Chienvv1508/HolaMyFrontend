@@ -70,9 +70,9 @@ function verifyOTP() {
 
             Register();
 
-            //setTimeout(() => {
-            //    window.location.href = '/HomePage'; 
-            //}, 1000);
+            setTimeout(() => {
+                window.location.href = '/Buildings/BuildingList'; 
+            }, 1000);
         })
         .catch((error) => {
             statusDiv.textContent = 'Lỗi xác minh OTP: ' + error.message;
