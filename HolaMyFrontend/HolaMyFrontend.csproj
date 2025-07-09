@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Pages\UserPage\" />
+    <Folder Include="wwwroot\img\roomType\" />
   </ItemGroup>
 
   <ItemGroup>
