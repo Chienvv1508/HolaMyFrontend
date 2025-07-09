@@ -21,11 +21,11 @@ namespace HolaMyFrontend.Services
         public (HttpClient Client, IActionResult? ErrorResult) GetAuthorizedClient()
         {
             var client = _httpClientFactory.CreateClient("ApiClient");
-            var token = _httpContextAccessor.HttpContext?.Request.Cookies["jwtToken"];
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["jwt"];
 
             if (string.IsNullOrEmpty(token))
             {
-                Console.WriteLine("Không tìm thấy token xác thực trong cookie 'jwtToken'.");
+                Console.WriteLine("Không tìm thấy token xác thực trong cookie 'jwt'.");
                 return (client, new JsonResult(new { success = false, message = "Vui lòng đăng nhập lại.", redirect = "/HomePage/Login" }));
             }
 
