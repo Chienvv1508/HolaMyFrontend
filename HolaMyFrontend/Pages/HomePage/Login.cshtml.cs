@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using HolaMyFrontend.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace HolaMyFrontend.Pages.HomePage
 {
@@ -21,11 +25,35 @@ namespace HolaMyFrontend.Pages.HomePage
         }
 
         
-        public IActionResult OnGet(string token = null)
+        public async  Task<IActionResult> OnGet(string token = null)
         {
             if (!string.IsNullOrEmpty(token))
             {
                 ViewData["Token"] = token;
+                var handler = new JwtSecurityTokenHandler();
+                var jwt = handler.ReadJwtToken(token);
+                var claims = jwt.Claims.ToList();
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                var role = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "role")?.Value;
+                Response.Cookies.Append("jwt", token, new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddDays(7)
+                });
+                return role switch
+                {
+                    "Admin" => Redirect("/AdminPage"),
+                    "Provider" => Redirect("/ProviderPage"),
+                    "Customer" => Redirect("/Buildings/BuildingList"),
+                    _ => RedirectToPage("/AccessDenied")
+                };
+
+
+
             }
             return Page();
         }

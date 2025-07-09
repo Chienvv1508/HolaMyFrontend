@@ -239,8 +239,8 @@
 
     <script>
         
-            async function fetchUserProfile() {
-                const token = localStorage.getItem('jwtToken');
+            async function fetchUserProfile(token) {
+                // const token = localStorage.getItem('jwtToken');
                 if (!token) return null;
 
                 try {
@@ -263,16 +263,29 @@
                     return null;
                 }
             }
+        function getCookie(name) {
+            const cookieString = document.cookie;
+            const cookies = cookieString.split(';');
+
+            for (let cookie of cookies) {
+                const [key, value] = cookie.trim().split('=');
+                if (key === name) {
+                    return decodeURIComponent(value);
+                }
+            }
+
+            return null;
+        }
 
         async function updateAuthUI() {
-            const token = localStorage.getItem('jwtToken');
+            const token = getCookie("jwt");
             const loginBtn = document.getElementById('login-btn');
             const userProfile = document.getElementById('user-profile');
             const userAvatar = document.getElementById('user-avatar');
             const userName = document.getElementById('user-name');
 
             if (token) {
-                const user = await fetchUserProfile();
+                const user = await fetchUserProfile(token);
                 if (user) { 
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
@@ -285,7 +298,7 @@
                         userAvatar.textContent = initial;
                     }
                 } else {
-                    localStorage.removeItem('jwtToken');
+                    // localStorage.removeItem('jwtToken');
                     loginBtn.style.display = 'flex';
                     userProfile.style.display = 'none';
                 }
@@ -296,8 +309,8 @@
         }
 
         function logout() {
-            localStorage.removeItem('jwtToken');
-            window.location.href = '/HomePage';
+            // localStorage.removeItem('jwtToken');
+            window.location.href = '/HomePage/Logout';
         }
         document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>

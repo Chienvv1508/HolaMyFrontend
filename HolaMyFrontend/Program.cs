@@ -1,4 +1,6 @@
-﻿using HolaMyFrontend.Models;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+
+using HolaMyFrontend.Models;
 using HolaMyFrontend.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiUrl"));
 builder.Services.AddScoped<ApiClientService>();
+builder.Services.AddHttpClient();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/HomePage/Login";
+        options.AccessDeniedPath = "/HomePage/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromHours(1);
+    });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -30,6 +41,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapRazorPages();
 
