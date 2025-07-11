@@ -14,6 +14,7 @@ namespace HolaMy.Core.DTOs.BuildingDTOs
         public string? AddressDetail { get; set; }
         public string? Description { get; set; }
         public WardDTO Ward { get; set; }
+        public int? Status { get; set; }
         public DateTime? CreatedAt { get; set; }
         public int UpdatedHoursBefore { get; set; }
         public List<BuildingImageDTO> BuildingImages { get; set; } = new List<BuildingImageDTO>();
@@ -21,23 +22,6 @@ namespace HolaMy.Core.DTOs.BuildingDTOs
         public ProviderDTO Provider { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
-        public float? Rating { get; set; }
-        public int? RatingNumber { get; set; }
-        public BuildingStatus? Status { get; set; }
-        public int? VipBoxLevel { get; set; } // Mức độ nổi bật từ vip_box
-        public string? VipBoxColor { get; set; }
-        public string? VipBoxName { get; set; } // Tên gói VIP
-
-        public string? YouTubeVideoUrl { get; set; }
-
-        public string? GoogleMapUrl { get; set; }
-    }
-    public enum BuildingStatus
-    {
-        Pending = 0,
-        Approved = 1,
-        Rejected = 2,
-        Disabled = 3
     }
     public class ProviderDTO
     {

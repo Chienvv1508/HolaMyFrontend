@@ -14,7 +14,7 @@ namespace HolaMyFrontend.Pages
 
         public IActionResult OnGet()
         {
-            return Redirect("/Homepage");
+            return Redirect("/Buildings/BuildingList");
         }
     }
 }

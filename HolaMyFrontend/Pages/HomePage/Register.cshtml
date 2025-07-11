@@ -40,7 +40,7 @@
                             <input id="lastName" class="form-control" placeholder="Tên" required />
                             <span id="lastName-error" class="text-danger"></span>
                         </div>
-                        @* <div class="mb-3">
+                        <div class="mb-3">
                             <label for="userType" class="form-label">Loại người dùng</label>
                             <select id="userType" class="form-select" required>
                                 <option value="0">Chọn loại người dùng</option>
@@ -48,7 +48,7 @@
                                 <option value="2">Người thuê trọ</option>
                             </select>
                             <span id="userType-error" class="text-danger"></span>
-                        </div> *@
+                        </div>
                         <button id="contibtn" class="btn btn-primary w-100 rounded-pill">Tiếp tục</button>
                     </form>
                     <p class="text-center mt-3">
@@ -148,7 +148,7 @@
         const repassword = document.getElementById('repassword').value;
         const firstName = document.getElementById('firstName').value.trim();
         const lastName = document.getElementById('lastName').value.trim();
-        // const userType = document.getElementById('userType').value.trim();
+        const userType = document.getElementById('userType').value.trim();
 
        
 
@@ -159,7 +159,7 @@
         const repasswordError = document.getElementById('repassword-error');
         const firstNameError = document.getElementById('firstName-error');
         const lastNameError = document.getElementById('lastName-error');
-        // const userTypeError = document.getElementById('userType-error');
+        const userTypeError = document.getElementById('userType-error');
         let isValid = true;
         const phoneRegex = /^0[0-9]{9}$/;
         if (!phoneRegex.test(phoneNumber)) {
@@ -195,13 +195,13 @@
         else {
             lastNameError.innerText = "";
         }
-        // const allowedUserTypes = ["1", "2"]; 
-        // if (!allowedUserTypes.includes(userType)) {
-        //     isValid = false;
-        //     userTypeError.innerText = "Bắt buộc chọn loại người dùng!";
-        // } else {
-        //     userTypeError.innerText = "";
-        // }
+        const allowedUserTypes = ["1", "2"]; 
+        if (!allowedUserTypes.includes(userType)) {
+            isValid = false;
+            userTypeError.innerText = "Bắt buộc chọn loại người dùng!";
+        } else {
+            userTypeError.innerText = "";
+        }
         if (!isValid) {
            
             return false;
