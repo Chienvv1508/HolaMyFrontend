@@ -21,6 +21,8 @@ namespace HolaMyFrontend.Pages.HomePage
         public Dictionary<string, List<BuildingDto>> TopWardBuildings { get; set; } = new();
         public string Search { get; set; }
         public List<BuildingDto> TopVipBuildings { get; set; } = new();
+        public List<BuildingDto> TopRatedBuildings { get; set; } = new();
+
 
 
         public async Task OnGetAsync()
@@ -33,7 +35,13 @@ namespace HolaMyFrontend.Pages.HomePage
 
             if (apiResponse != null && apiResponse.StatusCode == 200 && apiResponse.Data != null)
             {
-                Buildings = apiResponse.Data.Items ?? new List<BuildingDto>();
+                Buildings = apiResponse.Data.Items.Where(b => b.Status == 1).ToList() ?? new List<BuildingDto>();
+
+                TopRatedBuildings = Buildings
+        .OrderByDescending(b => b.Rating)
+        .ThenBy(b => b.RatingNumber) // nếu cùng rating thì ưu tiên giá rẻ
+        .Take(8)
+        .ToList();
             }
 
             // Nhóm theo ward và chọn 4 ward có nhiều nhà nhất
@@ -81,6 +89,9 @@ namespace HolaMyFrontend.Pages.HomePage
             public decimal? DisplayPrice { get; set; }
             public string WardName { get; set; } = string.Empty;
             public string Address { get; set; } = string.Empty;
+            public int Status { get; set; } 
+            public double Rating { get; set; } 
+            public int RatingNumber { get; set; }
         }
     }
 }
