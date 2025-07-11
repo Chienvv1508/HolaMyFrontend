@@ -57,9 +57,9 @@
                 </button>
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
-                        <a href="/" class="nav-item nav-link active">Home</a>
-                        <a href="/Shop" class="nav-item nav-link">Shop</a>
-                        <a href="/ShopDetail" class="nav-item nav-link">Shop Detail</a>
+                        <a href="/" class="nav-item nav-link @(Context.Request.Path == "/Homepage" ? "active" : "")">Home</a>
+                        <a href="/Buildings/BuildingList" class="nav-item nav-link @(Context.Request.Path == "/Buildings/BuildingList" ? "active" : "")">Nhà trọ</a>
+                        <a href="/ShopDetail" class="nav-item nav-link ">Shop Detail</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
@@ -85,7 +85,7 @@
                                     </div>
                                     <span id="user-name" class="text-primary"></span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end bg-secondary rounded-0 m-0" aria-labelledby="userDropdown">
+                                <ul class="dropdown-menu dropdown-menu-end rounded-0 m-0" aria-labelledby="userDropdown">
                                     <li><a class="dropdown-item" href="/Accounts/ViewProfileDetails">Xem thông tin tài khoản</a></li>
                                     <li><a class="dropdown-item" href="/Buildings/SavedBuildingList">Đã lưu </a></li>
                                     <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
