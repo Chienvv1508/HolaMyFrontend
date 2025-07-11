@@ -57,7 +57,7 @@
                 </button>
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
-                        <a href="/" class="nav-item nav-link @(Context.Request.Path == "/Homepage" ? "active" : "")">Home</a>
+                        <a href="/Homepage" class="nav-item nav-link @(Context.Request.Path == "/Homepage" ? "active" : "")">Trang chủ</a>
                         <a href="/Buildings/BuildingList" class="nav-item nav-link @(Context.Request.Path == "/Buildings/BuildingList" ? "active" : "")">Nhà trọ</a>
                         <a href="/ShopDetail" class="nav-item nav-link ">Shop Detail</a>
                         <div class="nav-item dropdown">
@@ -204,8 +204,7 @@
         </div>
     </div>
     <!-- Copyright End -->
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+    
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -220,7 +219,6 @@
     <script src="~/js/main.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-          
             const firebaseConfig = {
                 apiKey: "AIzaSyDNviFvnFgrC42AouVAejbLT3c_IkQIqrU",
                 authDomain: "authen-b7820.firebaseapp.com",
@@ -232,48 +230,49 @@
             };
             firebase.initializeApp(firebaseConfig);
 
-            
             updateAuthUI();
-        });
-    </script>
 
-    <script>
-        
-            async function fetchUserProfile(token) {
-                // const token = localStorage.getItem('jwtToken');
-                if (!token) return null;
-
-                try {
-                    const response = await fetch('http://localhost:8888/api/User/profile', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        return await response.json();
-                    } else {
-                        console.error('Failed to fetch user profile:', await response.text());
-                        return null;
-                    }
-                } catch (error) {
-                    console.error('Error fetching user profile:', error);
-                    return null;
+            // Mở chat tự động khi lần đầu vào Homepage + load lại tin nhắn cũ
+            if (window.location.pathname === "/Homepage") {
+                
+                if (!localStorage.getItem('chatOpened')) {
+                    document.getElementById('chat-window').classList.remove('d-none');
+                    localStorage.setItem('chatOpened', 'true');
                 }
             }
+            
+        });
+
+        async function fetchUserProfile(token) {
+            if (!token) return null;
+            try {
+                const response = await fetch('http://localhost:8888/api/User/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    console.error('Failed to fetch user profile:', await response.text());
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+                return null;
+            }
+        }
+
         function getCookie(name) {
             const cookieString = document.cookie;
             const cookies = cookieString.split(';');
-
             for (let cookie of cookies) {
                 const [key, value] = cookie.trim().split('=');
-                if (key === name) {
-                    return decodeURIComponent(value);
-                }
+                if (key === name) return decodeURIComponent(value);
             }
-
             return null;
         }
 
@@ -286,7 +285,7 @@
 
             if (token) {
                 const user = await fetchUserProfile(token);
-                if (user) { 
+                if (user) {
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
                     const fullName = `${user.firstName} ${user.lastName}`;
@@ -298,7 +297,6 @@
                         userAvatar.textContent = initial;
                     }
                 } else {
-                    // localStorage.removeItem('jwtToken');
                     loginBtn.style.display = 'flex';
                     userProfile.style.display = 'none';
                 }
@@ -309,13 +307,195 @@
         }
 
         function logout() {
-            // localStorage.removeItem('jwtToken');
+            sessionStorage.removeItem('chatHistory'); // xoá lịch sử chat
             window.location.href = '/HomePage/Logout';
         }
-        document.addEventListener('DOMContentLoaded', updateAuthUI);
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const isOpen = !chatWindow.classList.contains('d-none');
+            chatWindow.classList.toggle('d-none', isOpen);
+            loadMessagesFromSession();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            appendMessage('Bạn', message, true);
+            saveMessageToSession('Bạn', message, false);
+            input.value = '';
+
+            try {
+                const response = await fetch('http://localhost:8888/api/Chatbot/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': '*/*'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    const fallback = 'Xin lỗi, hiện tại mình không thể trả lời. Vui lòng thử lại sau.';
+                    appendMessage('HolaBot', fallback, false);
+                    saveMessageToSession('HolaBot', fallback, false);
+                    return;
+                }
+
+                const data = await response.json();
+                const botMessage = convertMarkdownToHTML(data.response);
+                appendMessage('HolaBot', botMessage, false, true);
+                saveMessageToSession('HolaBot', botMessage, true);
+
+            } catch (error) {
+                console.error('Chatbot error:', error);
+                const errMsg = 'Đã xảy ra lỗi. Bạn vui lòng thử lại sau nhé!';
+                appendMessage('HolaBot', errMsg, false);
+                saveMessageToSession('HolaBot', errMsg, false);
+            }
+        }
+
+        function appendMessage(sender, text, isUser, isHtml = false) {
+            const chat = document.getElementById('chat-messages');
+            const msg = document.createElement('div');
+            msg.className = `mb-2 ${isUser ? 'text-end' : 'text-start'}`;
+            msg.innerHTML = `<div class="d-inline-block px-3 py-2 rounded ${isUser ? 'bg-primary text-white' : 'bg-light text-dark'}" style="max-width: 90%; white-space: pre-wrap;">${isHtml ? text : escapeHtml(text)}</div>`;
+            chat.appendChild(msg);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, function (match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[match];
+            });
+        }
+
+        function convertMarkdownToHTML(markdown) {
+            return markdown
+                .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
+                .replace(/\((https?:\/\/[^\s()]+\.(jpg|jpeg|png|gif|webp)(\?[^()\s]*)?)\)/gi,
+                         '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function saveMessageToSession(sender, message, isHtml = false) {
+            let chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+            chatHistory.push({ sender, message, isHtml });
+            sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        }
+
+        function loadMessagesFromSession() {
+            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+            for (let msg of chatHistory) {
+                appendMessage(msg.sender, msg.message, msg.sender === 'Bạn', msg.isHtml);
+            }
+        }
     </script>
+
     
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
+<!-- ChatBot Start -->
+<div id="chatbot" class="position-fixed bottom-0 end-0 m-4" style="z-index: 1050;">
+    <div id="chat-window" class="card shadow-lg d-none" style="width: 320px; height: 400px; border-radius: 1rem;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
+            <span><i class="fas fa-robot me-2"></i> HolaMy ChatBot</span>
+            <button class="btn btn-sm btn-light" onclick="toggleChat()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="card-body p-3 overflow-auto" id="chat-messages" style="height: 280px; background-color: #f9f9f9;"></div>
+        <div class="card-footer p-2 border-top">
+            <div class="input-group">
+                <input id="chat-input" type="text" class="form-control" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <button id="chat-toggle-btn" class="btn btn-primary btn-lg rounded-circle shadow" onclick="toggleChat()">
+        <i class="fas fa-comments"></i>
+    </button>
+
+</div>
+<!-- ChatBot End -->
+<!-- Back to Top -->
+<a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+<style>
+
+    #chat-toggle-btn {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px; /* tùy chỉnh nếu icon to/nhỏ quá */
+    }
+
+    #chatbot #chat-window {
+        animation: fadeInUp 0.3s ease-in-out;
+    }
+
+    #chat-window{
+        position: fixed;
+        bottom: 20px;
+        right: 55px;
+        z-index: 1050;
+    }
+
+
+        /* Nút Chatbot */
+        #chatbot #chat-toggle-btn {
+            position: fixed;
+            bottom: 20px; /* giữ cố định 60px từ dưới */
+            right: 7px; /* theo đúng vị trí cũ */
+            z-index: 1050;
+        }
+
+
+    /* Nút Back-to-top */
+    .back-to-top {
+        position: fixed;
+        bottom: 80px; /* cao hơn nút Chatbot 60px */
+        right: 7px; /* cùng canh phải với Chatbot */
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1060; /* vượt trên Chatbot */
+        transition: opacity .3s;
+    }
+
+        .back-to-top:hover {
+            opacity: .8;
+        }
+
+
+
+     fadeInUp {
+        from
+
+    {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    }
+</style>
 </html>
