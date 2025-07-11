@@ -36,7 +36,7 @@ namespace HolaMyFrontend.Pages.Buildings
         public List<int>? AmenityIds { get; set; }
         public bool WardFilterOpen { get; set; }
 
-        public async Task OnGetAsync(int page = 1, string search = null, string sortBy = null,
+        public async Task OnGetAsync(int pageNumber = 1, string search = null, string sortBy = null,
             List<int> wardIds = null, List<int> roomTypeIds = null, List<string> priceRanges = null,
             List<int> amenityIds = null, bool wardFilterOpen = false, string status = "Approved")
         {
@@ -44,7 +44,7 @@ namespace HolaMyFrontend.Pages.Buildings
             {
                 var client = _httpClientFactory.CreateClient("ApiClient");
 
-                CurrentPage = page;
+                CurrentPage = pageNumber;
                 Search = search ?? string.Empty;
                 SortBy = sortBy ?? string.Empty;
                 WardIds = wardIds ?? new List<int>();
@@ -136,6 +136,24 @@ namespace HolaMyFrontend.Pages.Buildings
                 RoomTypeListDTO = new List<RoomTypeListDTO>();
                 AmenityListDTO = new List<AmenityListDTO>();
             }
+        }
+        public string BuildQueryString(int page)
+        {
+            var queryParams = new List<string> { $"pageNumber={page}", $"pageSize={PageSize}" };
+            if (!string.IsNullOrEmpty(Search))
+                queryParams.Add($"search={Uri.EscapeDataString(Search)}");
+            if (!string.IsNullOrEmpty(SortBy))
+                queryParams.Add($"sortBy={Uri.EscapeDataString(SortBy)}");
+            if (WardIds?.Any() == true)
+                queryParams.AddRange(WardIds.Select(id => $"wardIds={id}"));
+            if (RoomTypeIds?.Any() == true)
+                queryParams.AddRange(RoomTypeIds.Select(id => $"roomTypeIds={id}"));
+            if (PriceRanges?.Any() == true)
+                queryParams.AddRange(PriceRanges.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}"));
+            if (AmenityIds?.Any() == true)
+                queryParams.AddRange(AmenityIds.Select(id => $"amenityIds={id}"));
+
+            return $"?{string.Join("&", queryParams)}";
         }
     }
 }
