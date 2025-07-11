@@ -317,9 +317,9 @@
                                                 <div class="p-4 border border-secondary border-top-0 rounded-bottom">
                                                     @if (building.VipBoxLevel.HasValue)
                                                     {
-                                                        <span class="badge text-white mb-2 vip-label" style="background-color: @(building.VipBoxLevel.Value >= 2 ? "#d4a017" : "#28a745");">
+                                                        <span class="badge text-white mb-2 vip-label" style="background-color: @(building.VipBoxColor);">
                                                             @building.VipBoxName
-                                                            <i class="fa @(building.VipBoxLevel.Value >= 2 ? "fa-crown" : "fa-star") ms-1"></i>
+                                                            @* <i class="fa @(building.VipBoxLevel.Value >= 2 ? "fa-crown" : "fa-star") ms-1"></i> *@
                                                         </span>
                                                     }
                                                     <h5 class="building-name">@building.BuildingName</h5>
