@@ -29,21 +29,25 @@
                 <div class="row g-4">
                     <!-- Hình ảnh chính của tòa nhà -->
                     <div class="col-lg-6">
-                        <div class="border rounded overflow-hidden">
-                            <img id="main-image" src="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded main-image" alt="@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")" style="transition: all 0.3s ease-in-out; cursor: pointer;">
+                        <div class="border rounded overflow-hidden position-relative">
+                            <img id="main-image" src="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded main-image" alt="@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")" style="transition: all 0.3s ease-in-out; cursor: pointer; width: 100%; height: 400px; object-fit: contain;">
                             <!-- Danh sách ảnh nhỏ từ buildingImages và room images -->
-                            <div class="d-flex flex-wrap mt-2">
-                                @foreach (var image in Model.Building.BuildingImages)
-                                {
-                                    <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail building-image" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s;" alt="@(image.Description ?? "Hình ảnh tòa nhà")">
-                                }
-                                @foreach (var room in Model.Building.Rooms)
-                                {
-                                    @foreach (var image in room.ImageUrl)
+                            <div class="thumbnail-container position-relative mt-2">
+                                <button class="thumbnail-nav prev-btn" style="display: none; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; z-index: 10;">&lt;</button>
+                                <div class="thumbnail-wrapper d-flex flex-nowrap overflow-hidden" style="max-width: 100%;">
+                                    @foreach (var image in Model.Building.BuildingImages)
                                     {
-                                        <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail room-image" data-room-id="@room.RoomId" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s;" alt="@(image.Description ?? "Hình ảnh phòng")">
+                                        <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail building-image" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s; object-fit: contain;" alt="@(image.Description ?? "Hình ảnh tòa nhà")">
                                     }
-                                }
+                                    @foreach (var room in Model.Building.Rooms)
+                                    {
+                                        @foreach (var image in room.ImageUrl)
+                                        {
+                                            <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail room-image" data-room-id="@room.RoomId" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s; object-fit: contain;" alt="@(image.Description ?? "Hình ảnh phòng")">
+                                        }
+                                    }
+                                </div>
+                                <button class="thumbnail-nav next-btn" style="display: none; position: absolute; right: -30px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; z-index: 10;">&gt;</button>
                             </div>
                         </div>
                     </div>
@@ -96,7 +100,7 @@
                                     <span class="ms-2 text-muted">(4.0 - 10 reviews)</span>
                                 </span>
                             </li>
-                            <li class="mb-2"><i class="fa fa-info-circle me-2 text-primary"></i> Trạng thái: @(Model.Building.Status == 1 ? "Hoạt động" : "Không hoạt động")</li>
+                            <li class="mb-2"><i class="fa fa-info-circle me-2 text-primary"></i> Trạng thái: @(Model.Building.Status == HolaMy.Core.DTOs.BuildingDTOs.BuildingStatus.Approved ? "Hoạt động" : "Không hoạt động")</li>
                             <li class="mb-2"><i class="fa fa-map-marker-alt me-2 text-primary"></i> Địa chỉ: @(Model.Building.AddressDetail ?? "Không có thông tin"), @(Model.Building.Ward?.WardName ?? "Không xác định")</li>
                             <li class="mb-2"><i class="fa fa-user me-2 text-primary"></i> Chủ trọ: @(Model.Building.Provider?.Name ?? "Không xác định")</li>
                             <li class="mb-2"><i class="fa fa-phone me-2 text-primary"></i> Điện thoại: @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")</li>
@@ -133,8 +137,8 @@
                     <div class="col-lg-12">
                         <nav>
                             <div class="nav nav-tabs mb-3">
-                                <button class="nav-link active border-white border-bottom-0" type="button" role="tab" id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about" aria-controls="nav-about" aria-selected="true">Description</button>
-                                <button class="nav-link border-white border-bottom-0" type="button" role="tab" id="nav-reviews-tab" data-bs-toggle="tab" data-bs-target="#nav-reviews" aria-controls="nav-reviews" aria-selected="false">Reviews</button>
+                                <button class="nav-link active border-white border-bottom-0" type="button" role="tab" id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about" aria-controls="nav-about" aria-selected="true">Mô tả</button>
+                                <button class="nav-link border-white border-bottom-0" type="button" role="tab" id="nav-reviews-tab" data-bs-toggle="tab" data-bs-target="#nav-reviews" aria-controls="nav-reviews" aria-selected="false">Đánh giá</button>
                             </div>
                         </nav>
                         <div class="tab-content mb-5">
@@ -217,6 +221,32 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row mb-3">
+
+                            <!-- YouTube Video -->
+                            @if (!string.IsNullOrWhiteSpace(Model.Building.YouTubeVideoUrl))
+                            {
+                                <div class="col-md-6">
+                                    <h5>Video giới thiệu</h5>
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="@Model.Building.YouTubeVideoUrl" title="YouTube video" allowfullscreen></iframe>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Google Map -->
+                            @if (!string.IsNullOrWhiteSpace(Model.Building.GoogleMapUrl))
+                            {
+                                <div class="col-md-6">
+                                    <h5>Bản đồ</h5>
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="@Model.Building.GoogleMapUrl" title="Google Map" allowfullscreen="" loading="lazy"></iframe>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
                     </div>
                     <form action="/submit-review" method="POST" id="reviewForm">
                         <h4 class="mb-4 fw-bold">Leave a Review</h4>
@@ -266,12 +296,9 @@
                                     <i class="fas fa-phone me-2 text-primary"></i> @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")
                                 </button>
                                 <div class="d-flex gap-2">
-                                    <form action="/report-listing" method="POST" id="reportForm" class="w-50">
-                                        <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
-                                        <button type="submit" class="btn border border-secondary rounded-pill w-100 text-danger">
-                                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i> Báo xấu
-                                        </button>
-                                    </form>
+                                    <button type="button" class="btn border border-secondary rounded-pill w-50 text-danger" id="reportButton">
+                                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i> Báo xấu
+                                    </button>
                                     <button type="button" class="btn border border-secondary rounded-pill w-50 text-primary" onclick="navigator.share({title: '@(Model.Building.BuildingName ?? "Tòa nhà")', url: window.location.href})">
                                         <i class="fas fa-share-alt me-2 text-primary"></i> Chia sẻ
                                     </button>
@@ -293,7 +320,7 @@
                         {
                             <div class="d-flex align-items-center justify-content-start mb-4">
                                 <div class="rounded me-4" style="width: 100px; height: 100px;">
-                                    <img src="@building.ThumbnailUrl" class="img-fluid rounded" alt="@building.BuildingName">
+                                    <img src="@building.ThumbnailUrl" class="img-fluid rounded" style="width: 100px; height: 100px; object-fit: cover;" alt="@building.BuildingName">
                                 </div>
                                 <div>
                                     <h6 class="mb-2">@building.BuildingName</h6>
@@ -328,7 +355,7 @@
                     {
                         <div class="border border-primary rounded position-relative vesitable-item">
                             <div class="vesitable-img">
-                                <img src="@(building.ThumbnailUrl ?? "/img/placeholder.jpg")" class="img-fluid w-100 rounded-top" alt="@building.BuildingName">
+                                <img src="@(building.ThumbnailUrl ?? "/img/placeholder.jpg")" class="img-fluid w-100 rounded-top" style="height: 200px; object-fit: cover;" alt="@building.BuildingName">
                             </div>
                             <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">@building.WardName</div>
                             <div class="p-4 pb-0 rounded-bottom">
@@ -383,8 +410,77 @@
     </div>
 </div>
 <!-- Rental Detail End -->
+<!-- Modal báo xấu -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Báo xấu chủ trọ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reportForm" method="post" asp-page-handler="ReportLandlord" enctype="multipart/form-data">
+                    <input type="hidden" name="reportedOwnerId" value="@Model.Building.Provider?.Id">
+                    <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
+
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Lý do báo xấu <span class="text-danger">*</span></label>
+                        <select class="form-select" id="reason" name="reason" required>
+                            <option value="" disabled selected>Chọn lý do</option>
+                            <option value="Thông tin sai lệch">Thông tin sai lệch</option>
+                            <option value="Hành vi không phù hợp">Hành vi không phù hợp</option>
+                            <option value="Lừa đảo">Lừa đảo</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Mô tả chi tiết</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Mô tả vấn đề bạn gặp phải..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ảnh bằng chứng (tùy chọn, tối đa 10 ảnh, 5MB mỗi ảnh)</label>
+                        <div id="evidenceFilesContainer">
+                            <div class="input-group mb-2">
+                                <input type="file" class="form-control" name="evidenceFiles" accept="image/jpeg,image/png,image/gif" multiple>
+                                <div class="evidence-preview"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isAnonymous" name="isAnonymous">
+                        <label class="form-check-label" for="isAnonymous">Ẩn danh</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Gửi báo cáo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .input-group .form-control:invalid {
+        border-color: #dc3545;
+    }
+
+    .evidence-preview img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 5px;
+        border-radius: 5px;
+    }
+
+    .evidence-preview .error {
+        color: #dc3545;
+        font-size: 0.9em;
+    }
+
     .building-name {
         display: -webkit-box;
         -webkit-line-clamp: 1;
@@ -477,6 +573,19 @@
             font-size: 14px;
             margin: 0;
         }
+
+    .thumbnail-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .thumbnail-wrapper {
+        transition: transform 0.3s ease;
+    }
+
+    .thumbnail-nav:hover {
+        background: rgba(0,0,0,0.7);
+    }
 </style>
 
 <script>
@@ -486,7 +595,66 @@
         const roomCheckboxes = document.querySelectorAll('.room-checkbox');
         const toastContainer = document.getElementById('toastContainer');
         const apiErrorMessage = document.getElementById('apiErrorMessage');
+        const reportButton = document.getElementById('reportButton');
+        const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
         const defaultBuildingImage = '@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")';
+        const thumbnailWrapper = document.querySelector('.thumbnail-wrapper');
+        const prevBtn = document.querySelector('.thumbnail-nav.prev-btn');
+        const nextBtn = document.querySelector('.thumbnail-nav.next-btn');
+        let currentPosition = 0;
+        const thumbnailWidth = 78; // 70px width + 8px margin-right
+        const visibleThumbnails = 5; // Number of thumbnails visible at a time
+        const totalThumbnails = thumbnails.length;
+
+        // Show/hide navigation buttons based on number of thumbnails
+        if (totalThumbnails > visibleThumbnails) {
+            prevBtn.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+
+        // Handle previous button click
+        prevBtn.addEventListener('click', function () {
+            if (currentPosition > 0) {
+                currentPosition--;
+                thumbnailWrapper.style.transform = `translateX(-${currentPosition * thumbnailWidth}px)`;
+                updateNavButtons();
+            }
+        });
+
+        // Handle next button click
+        nextBtn.addEventListener('click', function () {
+            if (currentPosition < totalThumbnails - visibleThumbnails) {
+                currentPosition++;
+                thumbnailWrapper.style.transform = `translateX(-${currentPosition * thumbnailWidth}px)`;
+                updateNavButtons();
+            }
+        });
+
+        // Update navigation button states
+        function updateNavButtons() {
+            prevBtn.disabled = currentPosition === 0;
+            nextBtn.disabled = currentPosition >= totalThumbnails - visibleThumbnails;
+            prevBtn.style.opacity = currentPosition === 0 ? '0.5' : '1';
+            nextBtn.style.opacity = currentPosition >= totalThumbnails - visibleThumbnails ? '0.5' : '1';
+        }
+
+        updateNavButtons();
+
+        // Xử lý click vào nút Báo xấu
+        if (reportButton) {
+            reportButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                const authToken = localStorage.getItem('jwtToken');
+                if (!authToken) {
+                    showToast('error', 'Lỗi', 'Vui lòng đăng nhập để báo xấu.');
+                    setTimeout(() => {
+                        window.location.href = '/HomePage/Login';
+                    }, 2000);
+                } else {
+                    reportModal.show();
+                }
+            });
+        }
 
         // Xử lý click vào ảnh chính để mở ImageUrl trong tab mới
         mainImage.addEventListener('click', function (e) {
@@ -503,11 +671,9 @@
         thumbnails.forEach(thumbnail => {
             thumbnail.addEventListener('click', function (e) {
                 e.preventDefault();
-                // Cập nhật ảnh chính
                 mainImage.src = this.src;
                 mainImage.alt = this.alt;
 
-                // Nếu click vào ảnh của tòa nhà, bỏ chọn tất cả checkbox loại phòng
                 if (this.classList.contains('building-image')) {
                     roomCheckboxes.forEach(cb => {
                         cb.checked = false;
@@ -516,9 +682,7 @@
                             label.classList.remove('active');
                         }
                     });
-                }
-                // Nếu click vào ảnh của phòng, chọn checkbox tương ứng
-                else if (this.classList.contains('room-image')) {
+                } else if (this.classList.contains('room-image')) {
                     const roomId = this.dataset.roomId;
                     roomCheckboxes.forEach(cb => {
                         const isCurrent = cb.value === roomId;
@@ -539,7 +703,6 @@
         // Xử lý checkbox loại phòng
         roomCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
-                // Bỏ chọn tất cả các checkbox khác và cập nhật trạng thái active
                 roomCheckboxes.forEach(cb => {
                     const label = document.querySelector(`label[for="room-${cb.value}"]`);
                     if (cb !== this) {
@@ -558,7 +721,6 @@
                     }
                 });
 
-                // Cập nhật ảnh chính khi chọn checkbox
                 if (this.checked) {
                     mainImage.src = this.dataset.thumbnail;
                     mainImage.alt = `Hình ảnh phòng ${this.value}`;
@@ -590,37 +752,92 @@
             });
         });
 
-        // Xử lý form submit và hiển thị toast
-        const forms = ['saveForm', 'reviewForm', 'reportForm'];
-        forms.forEach(formId => {
-            const form = document.getElementById(formId);
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    setTimeout(() => {
-                        const isSuccess = Math.random() > 0.3;
-                        showToast(isSuccess ? 'success' : 'error', isSuccess ? 'Thành công' : 'Lỗi', isSuccess ? 'Hành động thành công.' : 'Có lỗi xảy ra.');
-                    }, 1000);
-                });
-            }
-        });
+        // Xử lý file input cho nhiều ảnh
+        const evidenceFilesContainer = document.getElementById('evidenceFilesContainer');
+        const fileInput = evidenceFilesContainer.querySelector('input[name="evidenceFiles"]');
 
-        // Hiển thị toast nếu có lỗi API
-        if (apiErrorMessage) {
-            showToast('error', 'Lỗi', apiErrorMessage.textContent);
-            apiErrorMessage.style.display = 'none';
+        function attachFileHandler(input) {
+            input.addEventListener('change', function () {
+                const previewContainer = this.parentElement.querySelector('.evidence-preview');
+                previewContainer.innerHTML = '';
+
+                const files = Array.from(this.files);
+                if (files.length > 10) {
+                    this.classList.add('is-invalid');
+                    previewContainer.innerHTML = '<span class="error">Chỉ được chọn tối đa 10 ảnh.</span>';
+                    showToast('error', 'Lỗi', 'Chỉ được chọn tối đa 10 ảnh.');
+                    return;
+                }
+
+                for (const file of files) {
+                    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                        this.classList.add('is-invalid');
+                        previewContainer.innerHTML += '<span class="error">Chỉ hỗ trợ JPEG, PNG, GIF.</span>';
+                        showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        this.classList.add('is-invalid');
+                        previewContainer.innerHTML += '<span class="error">Ảnh không được vượt quá 5MB.</span>';
+                        showToast('error', 'Lỗi', 'Ảnh không được vượt quá 5MB.');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        previewContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                this.classList.remove('is-invalid');
+            });
+        }
+
+        if (fileInput) {
+            attachFileHandler(fileInput);
+        }
+
+        const reportForm = document.getElementById('reportForm');
+        if (reportForm) {
+            reportForm.addEventListener('submit', function (e) {
+                const files = fileInput.files;
+                if (files.length > 10) {
+                    e.preventDefault();
+                    showToast('error', 'Lỗi', 'Chỉ được gửi tối đa 10 ảnh.');
+                    return;
+                }
+                for (const file of files) {
+                    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                        e.preventDefault();
+                        showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        e.preventDefault();
+                        showToast('error', 'Lỗi', 'Ảnh không được vượt quá 5MB.');
+                        return;
+                    }
+                }
+                if (!reportForm.querySelector('#reason').value) {
+                    e.preventDefault();
+                    showToast('error', 'Lỗi', 'Vui lòng chọn lý do báo xấu.');
+                }
+            });
         }
 
         function showToast(type, title, message) {
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
             toast.innerHTML = `
-                    <span class="toast-icon"></span>
-                    <div>
-                        <span class="toast-title">${title}</span>
-                        <p class="toast-message">${message}</p>
-                    </div>
-                    <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
-                `;
+                        <span class="toast-icon"></span>
+                        <div>
+                            <span class="toast-title">${title}</span>
+                            <p class="toast-message">${message}</p>
+                        </div>
+                        <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
+                    `;
             toastContainer.appendChild(toast);
             toast.style.display = 'block';
 
