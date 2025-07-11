@@ -160,7 +160,8 @@
                         <!-- Save to List -->
                         <form method="post" asp-page="/Buildings/SavedBuildingList" id="saveForm">
                             <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
-                            <button type="submit" class="btn border border-secondary rounded-pill px-4 py-2 text-primary btn-hover">
+                            <input type="hidden" name="roomId" id="roomIdInput">
+                            <button type="submit" class="btn border border-secondary rounded-pill px-4 py-2 text-primary btn-hover" onclick="return validateSaveForm()">
                                 <i class="fas fa-cart-plus me-2 text-primary"></i> Lưu vào danh sách
                             </button>
                         </form>
@@ -667,6 +668,7 @@
         const selectedRoomType = document.getElementById('selected-room-type');
         const selectedRoomPrice = document.getElementById('selected-room-price');
         const buildingPrice = document.querySelector('.building-price');
+        const roomIdInput = document.getElementById('roomIdInput');
         let currentPosition = 0;
         const thumbnailWidth = 78; // 70px width + 8px margin-right
         const visibleThumbnails = 5; // Number of thumbnails visible at a time
@@ -751,7 +753,8 @@
                     });
                     selectedRoomType.textContent = '';
                     selectedRoomPrice.textContent = '';
-                    buildingPrice.style.display = 'block';
+                    buildingPrice.style.display = 'block'; 
+                    roomIdInput.value = '';
                 } else if (this.classList.contains('room-image')) {
                     const roomId = this.dataset.roomId;
                     const roomType = this.dataset.roomType;
@@ -804,6 +807,8 @@
                         selectedRoomType.textContent = `Loại phòng: ${thumbnail.dataset.roomType}`;
                         selectedRoomPrice.textContent = thumbnail.dataset.roomPrice;
                         buildingPrice.style.display = 'none';
+                        roomIdInput.value = this.value; // Sửa: Cập nhật roomIdInput với this.value
+                        console.log(`Checkbox change: roomId set to ${this.value}`); // Debug
                     }
                 } else {
                     mainImage.src = defaultBuildingImage;
@@ -811,10 +816,11 @@
                     selectedRoomType.textContent = '';
                     selectedRoomPrice.textContent = '';
                     buildingPrice.style.display = 'block';
+                    roomIdInput.value = ''; // Reset roomId
+                    console.log('Checkbox change: roomId reset to empty'); // Debug
                 }
             });
         });
-
         // Handle star rating
         const stars = document.querySelectorAll('.rating-stars i');
         const ratingInput = document.getElementById('rating-value');

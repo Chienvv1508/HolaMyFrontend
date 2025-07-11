@@ -13,6 +13,7 @@
     </ol>
 </div>
 <!-- Single Page Header End -->
+
 <!-- Toast Notification Container -->
 <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>
 
@@ -21,51 +22,108 @@
     <div class="container py-5">
         <div class="row g-4">
             <div class="col-lg-12">
-                <div class="row g-4 justify-content-center">
-                    @if (Model.SavedBuildings.Any())
-                    {
-                        foreach (var building in Model.SavedBuildings)
-                        {
-                            <div class="col-md-6 col-lg-6 col-xl-4">
-                                <div class="rounded position-relative fruite-item">
-                                    <div class="fruite-img">
-                                        <img src="@building.ThumbnailUrl" class="img-fluid w-100 rounded-top" alt="@building.BuildingName" onerror="this.src='/img/placeholder.jpg'" />
-                                    </div>
-                                    <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">@building.Ward.WardName</div>
-                                    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
-                                        <h4>@building.BuildingName</h4>
-                                        <p class="description">Giá từ: @(building.RoomPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
-                                        <p class="description">Địa chỉ: @(building.AddressDetail ?? "Không có thông tin")</p>
-                                        <p class="description">Loại phòng: @(building.RoomTypeName ?? "Không xác định")</p>
-                                        <div class="d-flex justify-content-between flex-lg-wrap">
-                                            <a href="/Buildings/BuildingDetail/@building.BuildingId" class="btn border border-secondary rounded-pill px-3 text-primary">
-                                                <i class="fa fa-eye me-2 text-primary"></i> Xem chi tiết
-                                            </a>
-                                            <button class="btn border border-secondary rounded-pill px-3 text-danger remove-favorite-btn" data-saved-id="@building.SavedId" onclick="removeFavorite(@building.SavedId)">
-                                                <i class="fa fa-trash me-2"></i> Xóa
+                @if (Model.SavedBuildings.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Hình ảnh</th>
+                                    <th scope="col">Tên nhà trọ</th>
+                                    <th scope="col">Phường/Xã</th>
+                                    <th scope="col">Giá</th>
+                                    <th scope="col">Địa chỉ</th>
+                                    <th scope="col">Loại phòng</th>
+                                    <th scope="col">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var building in Model.SavedBuildings)
+                                {
+                                    <tr onclick="window.location.href='/Buildings/BuildingDetail/@building.BuildingId'" style="cursor: pointer;">
+                                        <th scope="row">
+                                            <div class="d-flex align-items-center">
+                                                <img src="@building.ThumbnailUrl" class="img-fluid me-5 rounded-circle" style="width: 80px; height: 80px;" alt="@building.BuildingName" onerror="this.src='/img/placeholder.jpg'" />
+                                            </div>
+                                        </th>
+                                        <td>
+                                            <p class="mb-0 mt-4">@building.BuildingName</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@building.Ward.WardName</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@(building.RoomPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@(building.AddressDetail ?? "Không có thông tin")</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@(building.RoomTypeName ?? "Không xác định")</p>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-md rounded-circle bg-light border mt-4"
+                                                    onclick="event.stopPropagation(); removeFavorite(@building.SavedId)">
+                                                <i class="fa fa-times text-danger"></i>
                                             </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                        </td>
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-12 text-center">
+                        <p>Không có nhà trọ yêu thích nào.</p>
+                    </div>
+                }
+
+                <!-- Phân trang -->
+                <div class="pagination d-flex justify-content-center mt-5">
+                    @if (Model.TotalPages > 0)
+                    {
+                        <!-- Nút trang trước -->
+                        <a href="@Model.BuildQueryString(Model.CurrentPage - 1)" class="rounded @(Model.CurrentPage == 1 ? "disabled" : "")">«</a>
+
+                        <!-- Hiển thị các trang -->
+                        {
+                            int startPage = Math.Max(1, Model.CurrentPage - 2);
+                            int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+
+                            if (startPage > 1)
+                            {
+                                <a href="@Model.BuildQueryString(1)" class="rounded">1</a>
+                                if (startPage > 2)
+                                {
+                                    <span>...</span>
+                                }
+                            }
+
+                            for (int i = startPage; i <= endPage; i++)
+                            {
+                                <a href="@Model.BuildQueryString(i)" class="rounded @(Model.CurrentPage == i ? "active" : "")">@i</a>
+                            }
+
+                            if (endPage < Model.TotalPages)
+                            {
+                                if (endPage < Model.TotalPages - 1)
+                                {
+                                    <span>...</span>
+                                }
+                                <a href="@Model.BuildQueryString(Model.TotalPages)" class="rounded">@Model.TotalPages</a>
+                            }
                         }
+
+                        <!-- Nút trang sau -->
+                        <a href="@Model.BuildQueryString(Model.CurrentPage + 1)" class="rounded @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">»</a>
                     }
                     else
                     {
-                        <div class="col-12 text-center">
-                            <p>Không có nhà trọ yêu thích nào.</p>
-                        </div>
+                        <span>Không có dữ liệu để hiển thị.</span>
                     }
-                    <div class="col-12">
-                        <div class="pagination d-flex justify-content-center mt-5">
-                            <a href="?page=@(Model.CurrentPage - 1)" class="rounded @(Model.CurrentPage == 1 ? "disabled" : "")">«</a>
-                            @for (int i = 1; i <= Model.TotalPages; i++)
-                            {
-                                <a href="?page=@i" class="rounded @(Model.CurrentPage == i ? "active" : "")">@i</a>
-                            }
-                            <a href="?page=@(Model.CurrentPage + 1)" class="rounded @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">»</a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -78,6 +136,64 @@
     @Html.AntiForgeryToken()
 </form>
 
+<!-- CSS cho bảng và phân trang -->
+<style>
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 1rem;
+        background-color: #fff;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .table th {
+        font-weight: 600;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-bordered {
+        border: 1px solid #dee2e6;
+    }
+
+    .table-bordered th, .table-bordered td {
+        border: 1px solid #dee2e6;
+    }
+
+    .table-dark {
+        background-color: #343a40;
+        color: #fff;
+    }
+
+    .btn-sm {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    media (max-width: 768px) {
+        .table th, .table td {
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+
+        .table img {
+            width: 80px;
+            height: 80px;
+        }
+    }
+</style>
+
+<!-- JavaScript cho toast và xóa nhà trọ -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const toastContainer = document.getElementById('toastContainer');
@@ -87,13 +203,13 @@
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
             toast.innerHTML = `
-                    <span class="toast-icon"></span>
-                    <div>
-                        <span class="toast-title">${title}</span>
-                        <p class="toast-message">${message}</p>
-                    </div>
-                    <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
-                `;
+                <span class="toast-icon"></span>
+                <div>
+                    <span class="toast-title">${title}</span>
+                    <p class="toast-message">${message}</p>
+                </div>
+                <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
+            `;
             toastContainer.appendChild(toast);
             toast.style.display = 'block';
 
@@ -110,18 +226,16 @@
         const successMessage = '@Html.Raw(TempData["SuccessMessage"]?.ToString() ?? "")';
         if (successMessage) {
             showToast('success', 'Thành công', successMessage);
-            TempData.remove('SuccessMessage'); // Clear TempData after showing
         }
 
         // Check for ErrorMessage
         const errorMessage = '@Html.Raw(TempData["ErrorMessage"]?.ToString() ?? "")';
         if (errorMessage) {
             showToast('error', 'Lỗi', errorMessage);
-            TempData.remove('ErrorMessage'); // Clear TempData after showing
         }
 
         // Remove favorite function
-        function removeFavorite(savedId) {
+        window.removeFavorite = function(savedId) {
             if (confirm('Bạn có chắc muốn xóa nhà trọ này khỏi danh sách yêu thích?')) {
                 const token = localStorage.getItem('jwtToken');
                 console.log('Token:', token ? token.substring(0, 20) + '...' : 'null');
@@ -134,69 +248,69 @@
                 document.getElementById("savedIdInput").value = savedId;
                 document.getElementById("deleteForm").submit();
             }
-        }
+        };
     });
 
     // Custom CSS for Toast
     const style = document.createElement('style');
     style.textContent = `
-            .custom-toast {
-                display: none;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1050;
-                background: linear-gradient(90deg, #e0f7f9 50%, #a5d6a7 50%);
-                color: #1a3c34;
-                border-radius: 10px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                padding: 15px 20px;
-                max-width: 300px;
-                font-family: Arial, sans-serif;
-                opacity: 1;
-                transition: opacity 0.5s ease-out;
-            }
-            .custom-toast.error {
-                background: linear-gradient(90deg, #ffebee 50%, #ef5350 50%);
-            }
-            .custom-toast .toast-icon {
-                width: 24px;
-                height: 24px;
-                background: #4caf50;
-                border-radius: 50%;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                margin-right: 10px;
-            }
-            .custom-toast.error .toast-icon {
-                background: #ef5350;
-            }
-            .custom-toast .toast-icon::before {
-                content: "✔";
-                color: white;
-                font-size: 16px;
-            }
-            .custom-toast.error .toast-icon::before {
-                content: "✖";
-            }
-            .custom-toast .toast-close {
-                float: right;
-                font-size: 18px;
-                cursor: pointer;
-                color: #1a3c34;
-                background: none;
-                border: none;
-                padding: 0;
-            }
-            .custom-toast .toast-title {
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-            .custom-toast .toast-message {
-                font-size: 14px;
-                margin: 0;
-            }
-        `;
+        .custom-toast {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+            background: linear-gradient(90deg, #e0f7f9 50%, #a5d6a7 50%);
+            color: #1a3c34;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            max-width: 300px;
+            font-family: Arial, sans-serif;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .custom-toast.error {
+            background: linear-gradient(90deg, #ffebee 50%, #ef5350 50%);
+        }
+        .custom-toast .toast-icon {
+            width: 24px;
+            height: 24px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .custom-toast.error .toast-icon {
+            background: #ef5350;
+        }
+        .custom-toast .toast-icon::before {
+            content: "✔";
+            color: white;
+            font-size: 16px;
+        }
+        .custom-toast.error .toast-icon::before {
+            content: "✖";
+        }
+        .custom-toast .toast-close {
+            float: right;
+            font-size: 18px;
+            cursor: pointer;
+            color: #1a3c34;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+        .custom-toast .toast-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .custom-toast .toast-message {
+            font-size: 14px;
+            margin: 0;
+        }
+    `;
     document.head.appendChild(style);
 </script>
