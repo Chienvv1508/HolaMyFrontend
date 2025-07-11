@@ -11,7 +11,11 @@
         public string WardName { get; set; }
         public string Address { get; set; }
         public float? Rating { get; set; }
+        public int? RatingNumber { get; set; }
         public int UpdatedHoursBefore { get; set; }
+        public int? VipBoxLevel { get; set; } // Mức độ nổi bật từ vip_box
+        public string? VipBoxColor { get; set; }
+        public string? VipBoxName { get; set; } // Tên gói VIP
     }
 
     public class BuildingFilterDTO
