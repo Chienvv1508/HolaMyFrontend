@@ -4,6 +4,20 @@
     ViewData["Title"] = Model.Building.BuildingName ?? "Chi tiết tòa nhà";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 <!-- Toast Notification Container -->
 <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>
 
@@ -219,39 +233,110 @@
                                 </div>
                             </div>
                             <div class="tab-pane" id="nav-reviews" role="tabpanel" aria-labelledby="nav-reviews-tab">
-                                <div class="d-flex">
-                                    <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                    <div class="">
-                                        <p class="mb-2" style="font-size: 14px;">March 5, 2025</p>
-                                        <div class="d-flex justify-content-between">
-                                            <h5>Jason Smith</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
-                                        </div>
-                                        <p class="text-dark">Great room, very comfortable and clean!</p>
+                                <!-- Thông báo lỗi hoặc thành công -->
+                                @if (TempData["CommentSuccessMessage"] != null)
+                                {
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        @TempData["CommentSuccessMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                     </div>
-                                </div>
-                                <div class="d-flex">
-                                    <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                    <div class="">
-                                        <p class="mb-2" style="font-size: 14px;">March 10, 2025</p>
-                                        <div class="d-flex justify-content-between">
-                                            <h5>Sam Peters</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
-                                        </div>
-                                        <p class="text-dark">Good location but a bit small for my needs.</p>
+                                }
+                                @if (TempData["CommentErrorMessage"] != null)
+                                {
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        @TempData["CommentErrorMessage"]
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                     </div>
+                                }
+
+                                <!-- Form để tạo bình luận mới -->
+                                @if (ViewData["UserId"] != null && (int)ViewData["UserId"] > 0)
+                                {
+                                    <h5>Viết bình luận</h5>
+                                    <form method="post" enctype="multipart/form-data" asp-page-handler="CreateComment" id="commentForm">
+                                        <input type="hidden" asp-for="NewComment.BuildingId" value="@Model.Building.BuildingId" />
+                                        <input type="hidden" asp-for="NewComment.UserId" value="@ViewData["UserId"]" />
+
+                                        <div class="form-group mb-3">
+                                            <label asp-for="NewComment.Content" class="form-label">Nội dung bình luận <span class="text-danger">*</span></label>
+                                            <textarea asp-for="NewComment.Content" class="form-control" rows="4" placeholder="Nhập bình luận của bạn..." id="commentContent"></textarea>
+                                            <span asp-validation-for="NewComment.Content" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label asp-for="NewComment.ContentType" class="form-label">Loại nội dung <span class="text-danger">*</span></label>
+                                            <select asp-for="NewComment.ContentType" class="form-control" id="contentType">
+                                                <option value="">Chọn loại nội dung</option>
+                                                <option value="text">Chỉ văn bản</option>
+                                                <option value="image">Chỉ hình ảnh</option>
+                                                <option value="text_image">Văn bản và hình ảnh</option>
+                                                <option value="file">Tệp khác</option>
+                                            </select>
+                                            <span asp-validation-for="NewComment.ContentType" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label asp-for="NewComment.File" class="form-label">Tệp đính kèm (tùy chọn, tối đa 5MB)</label>
+                                            <input type="file" asp-for="NewComment.File" class="form-control" accept="image/jpeg,image/png,image/gif" id="commentFile" />
+                                            <span asp-validation-for="NewComment.File" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="form-group mb-3">
+                                            <label asp-for="NewComment.Rating" class="form-label">Điểm đánh giá (1-5)</label>
+                                            <input asp-for="NewComment.Rating" class="form-control" type="number" step="0.1" min="1" max="5" placeholder="Nhập điểm (1-5)" id="rating-value" />
+                                            <span asp-validation-for="NewComment.Rating" class="text-danger"></span>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Gửi bình luận</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">Vui lòng <a href="/HomePage/Login">đăng nhập</a> để viết bình luận.</p>
+                                }
+
+                                <!-- Hiển thị bình luận hiện có -->
+                                <div class="mt-4">
+                                    <h5>Bình luận hiện có</h5>
+                                    @if (Model.BuildingComments.Any())
+                                    {
+                                        <p>Điểm đánh giá trung bình: @(Model.BuildingComments.Any(c => c.Rating.HasValue) ? Model.BuildingComments.Where(c => c.Rating.HasValue).Average(c => c.Rating.Value).ToString("0.0") : "Chưa có")</p>
+                                        @foreach (var comment in Model.BuildingComments)
+                                        {
+                                            <div class="card mb-3">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">@(comment.UserName ?? "Ẩn danh")</h5>
+                                                    <p class="card-text">@comment.Content</p>
+                                                    @if (comment.Rating.HasValue)
+                                                    {
+                                                        <div>Điểm đánh giá: @comment.Rating.Value.ToString("0.0")</div>
+                                                        <div class="d-flex mb-2">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                if (i <= Math.Floor(comment.Rating.Value))
+                                                                {
+                                                                    <i class="fa fa-star text-warning"></i>
+                                                                }
+                                                                else if (i <= Math.Ceiling(comment.Rating.Value) && comment.Rating.Value % 1 > 0)
+                                                                {
+                                                                    <i class="fa fa-star-half-alt text-warning"></i>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <i class="fa fa-star text-secondary"></i>
+                                                                }
+                                                            }
+                                                        </div>
+                                                    }
+                                                    <small class="text-muted">Đăng vào @comment.CreatedAt.ToString("g")</small>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">Chưa có bình luận nào.</p>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -281,26 +366,7 @@
                         </div>
 
                     </div>
-                    <form action="/submit-review" method="POST" id="reviewForm">
-                        <h4 class="mb-4 fw-bold">Leave a Review</h4>
-                        <div class="mb-3">
-                            <textarea class="form-control border rounded" name="comment" placeholder="Your Review *" rows="5" required></textarea>
-                        </div>
-                        <div class="d-flex align-items-center mb-4">
-                            <p class="mb-0 me-3">Rate this:</p>
-                            <div class="d-flex align-items-center rating-stars">
-                                <input type="hidden" name="rating" id="rating-value" value="0">
-                                <i class="fa fa-star text-muted" data-value="1" style="cursor: pointer;"></i>
-                                <i class="fa fa-star text-muted" data-value="2" style="cursor: pointer;"></i>
-                                <i class="fa fa-star text-muted" data-value="3" style="cursor: pointer;"></i>
-                                <i class="fa fa-star text-muted" data-value="4" style="cursor: pointer;"></i>
-                                <i class="fa fa-star text-muted" data-value="5" style="cursor: pointer;"></i>
-                            </div>
-                        </div>
-                        <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
-                        <input type="hidden" name="tenantId" value="2">
-                        <button type="submit" class="btn btn-primary rounded">Submit</button>
-                    </form>
+                    
                 </div>
             </div>
             <div class="col-lg-4 col-xl-3">
@@ -673,6 +739,7 @@
         const thumbnailWidth = 78; // 70px width + 8px margin-right
         const visibleThumbnails = 5; // Number of thumbnails visible at a time
         const totalThumbnails = thumbnails.length;
+        
 
         // Show/hide navigation buttons based on number of thumbnails
         if (totalThumbnails > visibleThumbnails) {
@@ -821,26 +888,83 @@
                 }
             });
         });
-        // Handle star rating
-        const stars = document.querySelectorAll('.rating-stars i');
-        const ratingInput = document.getElementById('rating-value');
+            // Handle comment form submission
+    const commentForm = document.querySelector('form[asp-page-handler="CreateComment"]');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function (e) {
+            const contentInput = document.querySelector('#commentContent');
+            const contentTypeInput = document.querySelector('#contentType');
+            const fileInput = document.querySelector('#commentFile');
+            const ratingInput = document.querySelector('#rating-value');
 
-        stars.forEach(star => {
-            star.addEventListener('click', function () {
-                const rating = this.getAttribute('data-value');
-                ratingInput.value = rating;
+            // Validate content
+            if (!contentInput.value.trim() && (contentTypeInput.value === 'text' || contentTypeInput.value === 'text_image')) {
+                e.preventDefault();
+                showToast('error', 'Lỗi', 'Vui lòng nhập nội dung bình luận.');
+                return;
+            }
 
-                stars.forEach(s => {
-                    if (s.getAttribute('data-value') <= rating) {
-                        s.classList.remove('text-muted');
-                        s.classList.add('text-secondary');
-                    } else {
-                        s.classList.remove('text-secondary');
-                        s.classList.add('text-muted');
-                    }
-                });
-            });
+            // Validate content type
+            if (!contentTypeInput.value) {
+                e.preventDefault();
+                showToast('error', 'Lỗi', 'Vui lòng chọn loại nội dung.');
+                return;
+            }
+
+            // Validate file for image or text_image content types
+            if ((contentTypeInput.value === 'image' || contentTypeInput.value === 'text_image') && (!fileInput.files || fileInput.files.length === 0)) {
+                e.preventDefault();
+                showToast('error', 'Lỗi', 'Vui lòng chọn tệp hình ảnh.');
+                return;
+            }
+
+            // Validate file format and size
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    e.preventDefault();
+                    showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    e.preventDefault();
+                    showToast('error', 'Lỗi', 'Tệp không được vượt quá 5MB.');
+                    return;
+                }
+            }
+
+            // Validate rating
+            if (ratingInput.value && (ratingInput.value < 1 || ratingInput.value > 5)) {
+                e.preventDefault();
+                showToast('error', 'Lỗi', 'Điểm đánh giá phải từ 1 đến 5.');
+                return;
+            }
         });
+    }
+
+            commentForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const response = await fetch('/Buildings/BuildingDetail?handler=CreateComment', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            }
+        });
+        if (response.ok) {
+            showToast('success', 'Thành công', 'Bình luận đã được gửi.');
+            // Reload comments via AJAX
+            const commentSection = document.querySelector('#nav-reviews');
+            const newComments = await fetch(`/Buildings/BuildingDetail?id=${formData.get('NewComment.BuildingId')}&handler=Comments`).then(res => res.text());
+            commentSection.innerHTML = newComments;
+        } else {
+            showToast('error', 'Lỗi', 'Không thể gửi bình luận.');
+        }
+    });
+
+        
 
         // Handle file input for evidence images
         const evidenceFilesContainer = document.getElementById('evidenceFilesContainer');

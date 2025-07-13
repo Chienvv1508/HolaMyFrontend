@@ -1,0 +1,58 @@
+﻿@page "{buildingId:int}"
+@model HolaMyFrontend.Pages.Comment.CommentsModel
+<h2>Comments for Building @Model.NewComment.BuildingId</h2>
+
+<h2>Comments for Building @Model.NewComment.BuildingId</h2>
+
+<!-- Form to create new comment -->
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="NewComment.BuildingId" />
+
+    <div class="form-group">
+        <label asp-for="NewComment.UserId"></label>
+        <input asp-for="NewComment.UserId" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="NewComment.Content"></label>
+        <textarea asp-for="NewComment.Content" class="form-control"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="NewComment.ContentType"></label>
+        <select asp-for="NewComment.ContentType" class="form-control"
+                asp-items="Html.GetEnumSelectList<HolaMyFrontend.Models.CommentContentType>()">
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="NewComment.File"></label>
+        <input type="file" asp-for="NewComment.File" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="NewComment.Rating"></label>
+        <input asp-for="NewComment.Rating" class="form-control" type="number" step="0.1" min="1" max="5" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit Comment</button>
+</form>
+
+<!-- Display existing comments -->
+<div class="mt-4">
+    <h3>Existing Comments</h3>
+    @foreach (var comment in Model.BuildingComments)
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">@comment.UserName</h5>
+                <p class="card-text">@comment.Content</p>
+                @if (comment.Rating.HasValue)
+                {
+                    <div>Rating: @comment.Rating.Value</div>
+                }
+                <small class="text-muted">Posted on @comment.CreatedAt.ToString("g")</small>
+            </div>
+        </div>
+    }
+</div>
