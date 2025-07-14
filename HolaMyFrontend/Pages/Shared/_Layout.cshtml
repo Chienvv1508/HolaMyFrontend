@@ -25,7 +25,120 @@
 
     <!-- Template Stylesheet -->
     <link href="~/css/style.css" rel="stylesheet" asp-append-version="true">
-   
+    <style>
+        .notification-dropdown {
+            position: relative;
+        }
+
+        .notification-icon {
+            cursor: pointer;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            left: 15px;
+            height: 20px;
+            min-width: 20px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            padding: 2px 6px;
+        }
+
+        .notification-menu {
+            position: absolute;
+            top: 40px;
+            right: 0;
+            width: 350px;
+            max-height: 250px;
+            overflow: auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+        }
+
+        
+
+        .notification-list {
+            max-height: 250px;
+            overflow-y: scroll;
+        }
+
+        .notification-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid #f1f1f1;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+            .notification-item:last-child {
+                border-bottom: none;
+            }
+
+            .notification-item.unread {
+                background-color: #e7f3ff;
+            }
+
+            .notification-item:hover {
+                background-color: #f1f1f1;
+            }
+
+            .notification-item .notification-icon-circle {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background-color: #f0f2f5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 10px;
+            }
+
+            .notification-item .notification-content {
+                flex: 1;
+            }
+
+            .notification-item .notification-time {
+                color: #6c757d;
+                font-size: 12px;
+            }
+
+        .notification-empty {
+            padding: 15px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .notification-footer {
+            padding: 10px;
+            border-top: 1px solid #f1f1f1;
+            text-align: center;
+        }
+
+            .notification-footer button {
+                background: none;
+                border: none;
+                color: #007bff;
+                font-size: 14px;
+                cursor: pointer;
+            }
+
+                .notification-footer button:hover {
+                    text-decoration: underline;
+                }
+    </style>
+
 </head>
 <body>
     <!-- Spinner Start -->
@@ -77,6 +190,23 @@
                             <i class="fa fa-shopping-bag fa-2x"></i>
                             <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">@ViewData["CartCount"]</span>
                         </a>
+
+                        <div class="dropdown me-4 my-auto" id="notification-container">
+                            <a href="#" class="notification-icon dropdown-toggle" id="notification-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-bell fa-2x"></i>
+                                <span class="notification-badge" id="notification-count" style="display:none;"></span>
+                            </a>
+
+                            <div class="dropdown-menu dropdown-menu-end p-2" id="notification-menu" style=" max-height: 400px;overflow: auto;width:300px;" aria-labelledby="notification-toggle" style="width: 300px;">
+                                <div id="notification-list">
+                                </div>
+                                <div class="notification-footer mt-2">
+                                    <button id="load-more-notifications" class="btn btn-sm btn-secondary w-100 mb-1">Xem Thêm</button>
+                                    <button id="mark-all-read" class="btn btn-sm btn-primary w-100">Đánh Dấu Đọc Hết</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="auth-container" class="my-auto">
                             <a id="login-btn" href="/HomePage/Login" class="btn btn-primary rounded-pill px-3" style="display: none;">Đăng nhập</a>
                             <div id="user-profile" class="dropdown" style="display: none;">
@@ -220,7 +350,7 @@
     <script src="~/js/main.js" asp-append-version="true"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-          
+
             const firebaseConfig = {
                 apiKey: "AIzaSyDNviFvnFgrC42AouVAejbLT3c_IkQIqrU",
                 authDomain: "authen-b7820.firebaseapp.com",
@@ -232,37 +362,50 @@
             };
             firebase.initializeApp(firebaseConfig);
 
-            
+
             updateAuthUI();
+
+            const notificationToggle = document.getElementById('notification-toggle');
+            const notificationMenu = document.getElementById('notification-menu');
+
+            notificationToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                notificationMenu.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!notificationToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
+                    notificationMenu.classList.remove('show');
+                }
+            });
         });
     </script>
 
     <script>
-        
-            async function fetchUserProfile(token) {
-                // const token = localStorage.getItem('jwtToken');
-                if (!token) return null;
 
-                try {
-                    const response = await fetch('http://localhost:8888/api/User/profile', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+        async function fetchUserProfile(token) {
+            // const token = localStorage.getItem('jwtToken');
+            if (!token) return null;
 
-                    if (response.ok) {
-                        return await response.json();
-                    } else {
-                        console.error('Failed to fetch user profile:', await response.text());
-                        return null;
+            try {
+                const response = await fetch('http://localhost:8888/api/User/profile', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
-                } catch (error) {
-                    console.error('Error fetching user profile:', error);
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    console.error('Failed to fetch user profile:', await response.text());
                     return null;
                 }
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+                return null;
             }
+        }
         function getCookie(name) {
             const cookieString = document.cookie;
             const cookies = cookieString.split(';');
@@ -277,36 +420,228 @@
             return null;
         }
 
+        let socket;
+        async function connect() {
+            const userId = getCookie("userId");
+            const token = getCookie("jwt");
+            socket = new WebSocket(`ws://localhost:8888/ws?userId=${userId}`);
+
+            socket.onopen = () => console.log("WebSocket opened for " + userId);
+            socket.onmessage = async (e) => {
+                const newNotification = JSON.parse(e.data);
+                await appendNewNotification(token, newNotification);
+            };
+            socket.onclose = () => console.log("WebSocket closed.");
+        }
+        async function appendNewNotification(token, notification) {
+            const notificationList = document.getElementById('notification-list');
+            const notificationItem = document.createElement('div');
+            notificationItem.className = `notification-item list-group-item ${notification.IsRead ? '' : 'unread'}`;
+            notificationItem.dataset.id = notification.Id;
+
+            notificationItem.innerHTML = `
+
+                                        <div class="notification-content">
+                                            <strong>${notification.Title}</strong><br>
+                                            ${notification.Message}
+
+                                        </div>
+                                    `;
+            notificationItem.addEventListener('click', async () => {
+                if (!notification.isRead) {
+                    await markNotificationAsRead(token, notification.id);
+                    notificationItem.classList.remove('unread');
+                    updateNotificationCount();
+                }
+                console.log(`Notification clicked: ${notification.title}`);
+                if (notification.url) {
+                    window.location.href = notification.url;
+                }
+            });
+
+            notificationList.insertBefore(notificationItem, notificationList.firstChild);
+
+            // const items = notificationList.getElementsByClassName('notification-item');
+            // if (items.length > 5) {
+            //     notificationList.removeChild(items[items.length - 1]);
+            // }
+            const markAllReadButton = document.getElementById('mark-all-read');
+            markAllReadButton.style.display = document.querySelectorAll('.notification-item.unread').length > 0 ? 'block' : 'none';
+            updateNotificationCount();
+        }
+
+
         async function updateAuthUI() {
             const token = getCookie("jwt");
             const loginBtn = document.getElementById('login-btn');
             const userProfile = document.getElementById('user-profile');
             const userAvatar = document.getElementById('user-avatar');
             const userName = document.getElementById('user-name');
+            const notificationContainer = document.getElementById('notification-container');
+            const loadMoreButton = document.getElementById('load-more-notifications');
+            const markAllReadButton = document.getElementById('mark-all-read');
 
             if (token) {
                 const user = await fetchUserProfile(token);
-                if (user) { 
+                if (user) {
+                    await connect();
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
                     const fullName = `${user.firstName} ${user.lastName}`;
                     userName.textContent = fullName;
                     if (user.avatar) {
-                        userAvatar.innerHTML = `<img src="${user.avatar}" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`;
+                        userAvatar.innerHTML = `
+                    <img src="${user.avatar}" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`;
                     } else {
                         const initial = user.firstName.charAt(0).toUpperCase();
                         userAvatar.textContent = initial;
                     }
+                    notificationContainer.style.display = 'block';
+                    currentPage = 1;
+                    document.getElementById('notification-list').innerHTML = '';
+                    await loadNotifications(token, currentPage);
+                    loadMoreButton.onclick = async () => {
+                        currentPage++;
+                        await loadNotifications(token, currentPage);
+                    };
+                    markAllReadButton.onclick = async () => {
+                        await markAllNotificationsAsRead(token);
+                    };
+
                 } else {
                     // localStorage.removeItem('jwtToken');
                     loginBtn.style.display = 'flex';
                     userProfile.style.display = 'none';
+                    notificationContainer.style.display = 'none';
                 }
             } else {
                 loginBtn.style.display = 'flex';
                 userProfile.style.display = 'none';
+                notificationContainer.style.display = 'none';
             }
         }
+        async function fetchNotifications(token, page, perPage) {
+            try {
+                const response = await fetch(`http://localhost:8888/api/Notifications?page=${page}&perPage=${perPage}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    console.error('Failed to fetch notifications:', await response.text());
+                    return [];
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+                return [];
+            }
+        }
+
+        async function markNotificationAsRead(token, notificationId) {
+            try {
+                const response = await fetch(`http://localhost:8888/api/Notification/notificationid=${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to mark notification as read:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+
+        async function markAllNotificationsAsRead(token) {
+            try {
+                const response = await fetch('http://localhost:8888/api/NotificationAll', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+
+                });
+
+                if (response.ok) {
+                    document.querySelectorAll('.notification-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                    updateNotificationCount();
+                } else {
+                    console.error('Failed to mark all notifications as read:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error marking all notifications as read:', error);
+            }
+        }
+        function updateNotificationCount() {
+            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+            const notificationCount = document.getElementById('notification-count');
+            notificationCount.textContent = unreadCount;
+            notificationCount.style.display = unreadCount > 0 ? 'flex' : 'none';
+        }
+
+        async function loadNotifications(token, page) {
+            const notifications = await fetchNotifications(token, page, 5);
+            const notificationList = document.getElementById('notification-list');
+            // const loadMoreButton = document.getElementById('load-more-notifications');
+            const markAllReadButton = document.getElementById('mark-all-read');
+            const notificationEmpty = document.createElement('p');
+            notificationEmpty.className = 'text-center text-muted mb-0';
+            console.log("LoadNoti");
+
+            if (notifications.length === 0 && page === 1) {
+                notificationList.innerHTML = '';
+                notificationList.appendChild(notificationEmpty);
+                // loadMoreButton.style.display = 'none';
+                // markAllReadButton.style.display = 'none';
+                return;
+            }
+
+
+            notifications.forEach(notification => {
+                const notificationItem = document.createElement('div');
+                notificationItem.className = `notification-item list-group-item ${notification.isRead ? '' : 'unread'}`;
+                notificationItem.dataset.id = notification.id;
+
+                notificationItem.innerHTML = `
+
+                                        <div class="notification-content">
+                                            <strong>${notification.title}</strong><br>
+                                            ${notification.message}
+
+                                        </div>
+                                    `;
+                notificationItem.addEventListener('click', async () => {
+                    if (!notification.isRead) {
+                        await markNotificationAsRead(token, notification.id);
+                        notificationItem.classList.remove('unread');
+                        updateNotificationCount();
+                    }
+                    console.log(`Notification clicked: ${notification.title}`);
+                    if (notification.url) {
+                        window.location.href = notification.url;
+                    }
+                });
+                notificationList.appendChild(notificationItem);
+            });
+
+            // const totalLoaded = notificationList.getElementsByClassName('notification-item').length;
+            // loadMoreButton.style.display = totalLoaded < 50 && notifications.length === 5 ? 'block' : 'none';
+            markAllReadButton.style.display = document.querySelectorAll('.notification-item.unread').length > 0 ? 'block' : 'none';
+            updateNotificationCount();
+        }
+
 
         function logout() {
             // localStorage.removeItem('jwtToken');
@@ -314,7 +649,7 @@
         }
         document.addEventListener('DOMContentLoaded', updateAuthUI);
     </script>
-    
+
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
