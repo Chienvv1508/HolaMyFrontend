@@ -32,10 +32,42 @@
                         <div class="bg-light ps-3 py-3 rounded d-flex justify-content-between mb-4">
                             <label for="sortBy">Sắp xếp theo:</label>
                             <select id="sortBy" name="sortBy" class="border-0 form-select-sm bg-light me-3" onchange="this.form.submit()" form="search-form">
-                                <option value="" selected="@(string.IsNullOrEmpty(Model.SortBy) ? "selected" : "")">Mặc định</option>
-                                <option value="price-asc" selected="@(Model.SortBy == "price-asc" ? "selected" : "")">Giá tăng dần</option>
-                                <option value="price-desc" selected="@(Model.SortBy == "price-desc" ? "selected" : "")">Giá giảm dần</option>
-                                <option value="name-asc" selected="@(Model.SortBy == "name-asc" ? "selected" : "")">Tên A-Z</option>
+                                @if (string.IsNullOrEmpty(Model.SortBy))
+                                {
+                                    <option value="" selected>Mặc định</option>
+                                }
+                                else
+                                {
+                                    <option value="">Mặc định</option>
+                                }
+
+                                @if (Model.SortBy == "price-asc")
+                                {
+                                    <option value="price-asc" selected>Giá tăng dần</option>
+                                }
+                                else
+                                {
+                                    <option value="price-asc">Giá tăng dần</option>
+                                }
+
+                                @if (Model.SortBy == "price-desc")
+                                {
+                                    <option value="price-desc" selected>Giá giảm dần</option>
+                                }
+                                else
+                                {
+                                    <option value="price-desc">Giá giảm dần</option>
+                                }
+
+                                @if (Model.SortBy == "name-asc")
+                                {
+                                    <option value="name-asc" selected>Tên A-Z</option>
+                                }
+                                else
+                                {
+                                    <option value="name-asc">Tên A-Z</option>
+                                }
+
                             </select>
                         </div>
                     </div>
@@ -113,7 +145,7 @@
                         </div>
                         <hr class="filter-divider">
                         <div class="row g-4">
-                            <!-- Bộ lọc phường/xã (không collapse) -->
+                            <!-- Bộ lọc phường/xã -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
                                     <h4 class="mb-2">Phường/Xã</h4>
@@ -136,7 +168,7 @@
                                 </div>
                             </div>
                             <hr class="filter-divider">
-                            <!-- Bộ lọc loại phòng (không collapse) -->
+                            <!-- Bộ lọc loại phòng -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
                                     <h4 class="mb-2">Loại phòng</h4>
@@ -155,7 +187,7 @@
                                 </div>
                             </div>
                             <hr class="filter-divider">
-                            <!-- Bộ lọc khoảng giá (không collapse) -->
+                            <!-- Bộ lọc khoảng giá -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
                                     <h4 class="mb-2">Khoảng giá</h4>
@@ -206,7 +238,7 @@
                                 </div>
                             </div>
                             <hr class="filter-divider">
-                            <!-- Bộ lọc tiện ích (không collapse, hiển thị 5 đầu tiên) -->
+                            <!-- Bộ lọc tiện ích -->
                             <div class="col-lg-12">
                                 <div class="mb-3">
                                     <h4 class="mb-2">Tiện ích</h4>
@@ -229,7 +261,7 @@
                                 </div>
                             </div>
                             <hr class="filter-divider">
-                            <!-- Các phần còn lại như Nổi bật, Banner, v.v. -->
+                            <!-- Mới nhất -->
                             <div class="col-lg-12">
                                 <h4 class="mb-3">Mới nhất</h4>
                                 @foreach (var building in Model.FeaturedBuildings)
@@ -239,15 +271,38 @@
                                             <img src="@building.ThumbnailUrl" class="img-fluid rounded" alt="@building.BuildingName">
                                         </div>
                                         <div>
-                                            <h6 class="mb-2">@building.BuildingName</h6>
-                                            <div class="d-flex mb-2">
-                                                <!-- Giả sử đánh giá sao, có thể thay bằng dữ liệu thực nếu có -->
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
+                                            @if (building.VipBoxLevel.HasValue)
+                                                {
+                                                    <span class="badge text-white ms-2 vip-label" style="background-color: @(building.VipBoxColor)">
+                                                        @building.VipBoxName
+                                                        @* <i class="fa @(building.VipBoxLevel.Value >= 2 ? "fa-crown" : "fa-star") ms-1"></i> *@
+                                                    </span>
+                                                }
+                                            <h6 class="mb-2">
+                                                @building.BuildingName
+                                                
+                                            </h6>
+                                            @if (building.Rating.HasValue)
+                                            {
+                                                <div class="d-flex mb-2">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        if (i <= Math.Floor(building.Rating.Value))
+                                                        {
+                                                            <i class="fa fa-star text-warning"></i>
+                                                        }
+                                                        else if (i <= Math.Ceiling(building.Rating.Value) && building.Rating.Value % 1 > 0)
+                                                        {
+                                                            <i class="fa fa-star-half-alt text-warning"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fa fa-star text-body"></i>
+                                                        }
+                                                    }
+                                                    <span class="ms-2 text-muted">(@building.Rating.Value.ToString("0.0"))</span>
+                                                </div>
+                                            }
                                             <div class="d-flex mb-2">
                                                 <h5 class="fw-bold me-2">@(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</h5>
                                             </div>
@@ -293,6 +348,13 @@
                                                 </div>
                                                 <div class="text-white bg-secondary px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">@building.WardName</div>
                                                 <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                                    @if (building.VipBoxLevel.HasValue)
+                                                    {
+                                                        <span class="badge text-white mb-2 vip-label" style="background-color: @(building.VipBoxColor);">
+                                                            @building.VipBoxName
+                                                            @* <i class="fa @(building.VipBoxLevel.Value >= 2 ? "fa-crown" : "fa-star") ms-1"></i> *@
+                                                        </span>
+                                                    }
                                                     <h5 class="building-name">@building.BuildingName</h5>
                                                     @if (building.Rating.HasValue)
                                                     {
@@ -309,10 +371,10 @@
                                                                 }
                                                                 else
                                                                 {
-                                                                    <i class="fa fa-star text-secondary"></i>
+                                                                    <i class="fa fa-star text-body"></i>
                                                                 }
                                                             }
-                                                            <span class="ms-2 text-muted">(@building.Rating.Value.ToString("0.0"))</span>
+                                                            <span class="ms-2 text-muted">(@building.RatingNumber)</span>
                                                         </div>
                                                     }
                                                     <p class="text-success fw-bold fs-5 mb-2">@(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</p>
@@ -356,27 +418,42 @@
                             }
                             <div class="col-12">
                                 <div class="pagination d-flex justify-content-center mt-5">
-                                    @if (Model.TotalPages > 0)
+                                   @if (Model.TotalPages > 0)
                                     {
                                         <!-- Nút trang trước -->
-                                        <a href="?page=@(Model.CurrentPage - 1)&search=@Uri.EscapeDataString(Model.Search ?? "")&sortBy=@Uri.EscapeDataString(Model.SortBy ?? "")&@string.Join("&", Model.WardIds?.Select(id => $"wardIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.RoomTypeIds?.Select(id => $"roomTypeIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.PriceRanges?.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}") ?? Array.Empty<string>())&@string.Join("&", Model.AmenityIds?.Select(id => $"amenityIds={id}") ?? Array.Empty<string>())"
-                                           class="rounded @(Model.CurrentPage == 1 ? "disabled" : "")">«</a>
+                                        <a href="@Model.BuildQueryString(Model.CurrentPage - 1)" class="rounded @(Model.CurrentPage == 1 ? "disabled" : "")">«</a>
 
-                                        <!-- Các số trang -->
-                                        @for (int i = 1; i <= Model.TotalPages; i++)
+                                        <!-- Hiển thị các trang -->
                                         {
-                                            <a href="?page=@i&search=@Uri.EscapeDataString(Model.Search ?? "")&sortBy=@Uri.EscapeDataString(Model.SortBy ?? "")&@string.Join("&", Model.WardIds?.Select(id => $"wardIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.RoomTypeIds?.Select(id => $"roomTypeIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.PriceRanges?.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}") ?? Array.Empty<string>())&@string.Join("&", Model.AmenityIds?.Select(id => $"amenityIds={id}") ?? Array.Empty<string>())"
-                                               class="rounded @(Model.CurrentPage == i ? "active" : "")">@i</a>
+                                            int startPage = Math.Max(1, Model.CurrentPage - 2);
+                                            int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+
+                                            if (startPage > 1)
+                                            {
+                                                <a href="@Model.BuildQueryString(1)" class="rounded">1</a>
+                                                if (startPage > 2)
+                                                {
+                                                    <span>...</span>
+                                                }
+                                            }
+
+                                            for (int i = startPage; i <= endPage; i++)
+                                            {
+                                                <a href="@Model.BuildQueryString(i)" class="rounded @(Model.CurrentPage == i ? "active" : "")">@i</a>
+                                            }
+
+                                            if (endPage < Model.TotalPages)
+                                            {
+                                                if (endPage < Model.TotalPages - 1)
+                                                {
+                                                    <span>...</span>
+                                                }
+                                                <a href="@Model.BuildQueryString(Model.TotalPages)" class="rounded">@Model.TotalPages</a>
+                                            }
                                         }
 
                                         <!-- Nút trang sau -->
-                                        <a href="?page=@(Model.CurrentPage + 1)&search=@Uri.EscapeDataString(Model.Search ?? "")&sortBy=@Uri.EscapeDataString(Model.SortBy ?? "")&@string.Join("&", Model.WardIds?.Select(id => $"wardIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.RoomTypeIds?.Select(id => $"roomTypeIds={id}") ?? Array.Empty<string>())&@string.Join("&", Model.PriceRanges?.Select(pr => $"priceRanges={Uri.EscapeDataString(pr)}") ?? Array.Empty<string>())&@string.Join("&", Model.AmenityIds?.Select(id => $"amenityIds={id}") ?? Array.Empty<string>())"
-                                           class="rounded @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">»</a>
-                                    }
-                                    else
-                                    {
-                                        <!-- Hiển thị thông báo khi không có dữ liệu -->
-                                        <span>Không có dữ liệu để hiển thị.</span>
+                                        <a href="@Model.BuildQueryString(Model.CurrentPage + 1)" class="rounded @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">»</a>
                                     }
                                 </div>
                             </div>
@@ -414,10 +491,61 @@
                             overflow: hidden;
                             text-overflow: ellipsis;
                             line-height: 1.5em;
-                            min-height: 1.5em; /* Cố định 1 dòng */
-                            max-height: 1.5em; /* Giới hạn tối đa 1 dòng */
+                            min-height: 1.5em;
+                            max-height: 1.5em;
                             margin-bottom: 0.5rem;
-                            font-size: 1.25rem; /* fs-5, nhỏ hơn h4 */
+                            font-size: 1.25rem;
+                        }
+
+                        .vip-label {
+                            font-size: 0.85rem;
+                            font-weight: 500;
+                            padding: 4px 8px;
+                            border-radius: 12px;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 4px;
+                            margin-bottom: 0.5rem;
+                        }
+
+                        .vip-label i {
+                            font-size: 0.75rem;
+                        }
+
+                        .filter-divider {
+                            border: 0;
+                            border-top: 1px solid #e0e0e0;
+                            margin: 1rem 0;
+                        }
+
+                        .form-check-input:hover {
+                            border-color: #28a745;
+                            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+                        }
+
+                        .ward-hidden, .amenity-hidden {
+                            display: none;
+                        }
+
+                        .show-more-wards, .show-more-amenities {
+                            color: #007bff;
+                            cursor: pointer;
+                            text-decoration: none;
+                            display: block;
+                            margin-top: 10px;
+                        }
+
+                        .show-more-wards:hover, .show-more-amenities:hover {
+                            text-decoration: underline;
+                        }
+
+                        .filter-tag {
+                            cursor: pointer;
+                            transition: background-color 0.2s;
+                        }
+
+                        .filter-tag:hover {
+                            background-color: #6c757d !important;
                         }
                     </style>
 
@@ -430,7 +558,7 @@
                                 let currentIndex = 0;
 
                                 container.addEventListener('mouseenter', () => {
-                                    images[0].style.display = 'block'; // Hiển thị ảnh đầu tiên khi hover
+                                    images[0].style.display = 'block';
                                     let interval = setInterval(() => {
                                         if (currentIndex < images.length - 1) {
                                             currentIndex++;
@@ -439,7 +567,7 @@
                                             currentIndex = 0;
                                             slider.style.transform = 'translateX(0)';
                                         }
-                                    }, 1000); // Chuyển ảnh mỗi 1 giây
+                                    }, 1000);
 
                                     container.addEventListener('mouseleave', () => {
                                         clearInterval(interval);
@@ -451,10 +579,8 @@
                             }
                         });
 
-                        // Hàm placeholder cho chat (cần thay thế bằng logic thực tế)
                         function startChat(buildingId) {
                             alert('Bắt đầu chat cho nhà trọ ID: ' + buildingId);
-                            // Thay bằng logic chat thực tế, ví dụ: mở modal hoặc chuyển hướng
                         }
                     </script>
                 </div>
@@ -463,44 +589,6 @@
     </div>
 </div>
 <!-- Fruits Shop End-->
-<!-- CSS để thêm đường thẳng mảnh, hover màu xanh và thẻ bộ lọc -->
-<style>
-    .filter-divider {
-        border: 0;
-        border-top: 1px solid #e0e0e0;
-        margin: 1rem 0;
-    }
-
-    .form-check-input:hover {
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-    }
-
-    .ward-hidden, .amenity-hidden {
-        display: none;
-    }
-
-    .show-more-wards, .show-more-amenities {
-        color: #007bff;
-        cursor: pointer;
-        text-decoration: none;
-        display: block;
-        margin-top: 10px;
-    }
-
-        .show-more-wards:hover, .show-more-amenities:hover {
-            text-decoration: underline;
-        }
-
-    .filter-tag {
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-        .filter-tag:hover {
-            background-color: #6c757d !important;
-        }
-</style>
 
 <!-- JavaScript để xử lý hiển thị thêm wards, amenities và xóa bộ lọc -->
 <script>
@@ -535,8 +623,8 @@
             const checkboxId = this.getAttribute('data-checkbox-id');
             const checkbox = document.getElementById(checkboxId);
             if (checkbox) {
-                checkbox.checked = false; // Bỏ chọn checkbox
-                document.getElementById('search-form').submit(); // Gửi lại form
+                checkbox.checked = false;
+                document.getElementById('search-form').submit();
             }
         });
     });

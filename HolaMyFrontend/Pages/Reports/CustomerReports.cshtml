@@ -1,0 +1,426 @@
+﻿@page
+@using HolaMy.Core.DTOs.ReportDTOs
+@model HolaMyFrontend.Pages.Reports.CustomerReportsModel
+@{
+    ViewData["Title"] = "Danh sách báo cáo của tôi";
+}
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>
+
+<!-- Page Header Start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Báo cáo của tôi</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+        <li class="breadcrumb-item active text-white">Báo cáo</li>
+    </ol>
+</div>
+<!-- Page Header End -->
+
+<!-- Customer Reports Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <p style="display:none;" id="apiErrorMessage">@Model.ErrorMessage</p>
+        }
+
+        <div class="row g-4 mb-5">
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <form method="get" class="d-flex align-items-center gap-3">
+                        <div class="input-group w-25">
+                            <span class="input-group-text">Sắp xếp</span>
+                            <select name="sortBy" class="form-select" onchange="this.form.submit()">
+                                <option value="" selected disabled>Chọn kiểu sắp xếp</option>
+                                <option value="created-desc" selected="@(Model.SortBy == "created-desc" ? "selected" : "")">Mới nhất</option>
+                                <option value="created-asc" selected="@(Model.SortBy == "created-asc" ? "selected" : "")">Cũ nhất</option>
+                                <option value="status" selected="@(Model.SortBy == "status" ? "selected" : "")">Trạng thái</option>
+                            </select>
+                        </div>
+                        <div class="input-group w-25">
+                            <span class="input-group-text">Số lượng mỗi trang</span>
+                            <select name="pageSize" class="form-select" onchange="this.form.submit()">
+                                <option value="5" selected="@(Model.PageSize == 5 ? "selected" : "")">5</option>
+                                <option value="10" selected="@(Model.PageSize == 10 ? "selected" : "")">10</option>
+                                <option value="20" selected="@(Model.PageSize == 20 ? "selected" : "")">20</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                @if (Model.Reports.Items.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Ẩn danh</th>
+                                    <th scope="col">Chủ trọ</th>
+                                    <th scope="col">Lý do</th>
+                                    <th scope="col">Mô tả</th>
+                                    <th scope="col">Ngày tạo</th>
+                                    <th scope="col">Trạng thái</th>
+                                    <th scope="col">Phản hồi từ chủ trọ</th>
+                                    <th scope="col">Phản hồi từ quản trị viên</th>
+                                    <th scope="col">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var report in Model.Reports.Items)
+                                {
+                                    <tr>
+                                        <th scope="row">
+                                            <div class="d-flex align-items-center">
+                                                <p class="mb-0 mt-4">@report.ReportId</p>
+                                            </div>
+                                        </th>
+                                        <td>
+                                            <p class="mb-0 mt-4">
+                                                @if (report.IsAnonymous)
+                                                {
+                                                    <span class="text-success">
+                                                        <i class="fas fa-check-circle me-1"></i>
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger">
+                                                        <i class="fas fa-times-circle me-1"></i>
+                                                    </span>
+                                                }
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@report.ReportedOwnerName</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@report.Reason</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4 text-truncate" style="max-width: 200px;" title="@report.Description">
+                                                @report.Description
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">@report.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4">
+                                                @switch (report.Status)
+                                                {
+                                                    case ReportStatus.PENDING:
+                                                        <span class="badge bg-warning">Đang chờ xử lý</span>
+                                                        break;
+                                                    case ReportStatus.PENDING_REVIEW:
+                                                        <span class="badge bg-info">Đang chờ xem xét</span>
+                                                        break;
+                                                    case ReportStatus.WAITING_RESPONSE:
+                                                        <span class="badge bg-primary">Đang chờ phản hồi từ chủ trọ</span>
+                                                        break;
+                                                    case ReportStatus.RESOLVED:
+                                                        <span class="badge bg-success">Đã giải quyết</span>
+                                                        break;
+                                                    case ReportStatus.REJECTED:
+                                                        <span class="badge bg-danger">Đã từ chối</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">Không xác định</span>
+                                                        break;
+                                                }
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4 text-truncate" style="max-width: 200px;" title="@report.ProviderResponse">
+                                                @(string.IsNullOrEmpty(report.ProviderResponse) ? "Chưa có" : report.ProviderResponse)
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <p class="mb-0 mt-4 text-truncate" style="max-width: 200px;" title="@report.AdminNote">
+                                                @(string.IsNullOrEmpty(report.AdminNote) ? "Chưa có" : report.AdminNote)
+                                            </p>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-md rounded-circle bg-light border mt-4 view-details" data-report-id="@report.ReportId" data-bs-toggle="modal" data-bs-target="#reportDetailModal">
+                                                <i class="fas fa-eye text-primary"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                }
+                else
+                {
+                    <div class="text-center">
+                        <p class="text-muted">Bạn chưa gửi báo cáo nào.</p>
+                    </div>
+                }
+                <div class="col-12">
+                    <div class="pagination d-flex justify-content-center mt-5">
+                        @if (Model.Reports.TotalPages > 0)
+                        {
+                            <!-- Previous Page -->
+                            <a href="?page=@(Model.Reports.PageNumber - 1)&pageSize=@Model.PageSize&sortBy=@Model.SortBy" class="rounded @(Model.Reports.PageNumber == 1 ? "disabled" : "")">«</a>
+
+                            <!-- Page Numbers -->
+                            {
+                                int startPage = Math.Max(1, Model.Reports.PageNumber - 2);
+                                int endPage = Math.Min(Model.Reports.TotalPages, Model.Reports.PageNumber + 2);
+
+                                if (startPage > 1)
+                                {
+                                    <a href="?page=1&pageSize=@Model.PageSize&sortBy=@Model.SortBy" class="rounded">1</a>
+                                    if (startPage > 2)
+                                    {
+                                        <span>...</span>
+                                    }
+                                }
+
+                                for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <a href="?page=@i&pageSize=@Model.PageSize&sortBy=@Model.SortBy" class="rounded @(Model.Reports.PageNumber == i ? "active" : "")">@i</a>
+                                }
+
+                                if (endPage < Model.Reports.TotalPages)
+                                {
+                                    if (endPage < Model.Reports.TotalPages - 1)
+                                    {
+                                        <span>...</span>
+                                    }
+                                    <a href="?page=@Model.Reports.TotalPages&pageSize=@Model.PageSize&sortBy=@Model.SortBy" class="rounded">@Model.Reports.TotalPages</a>
+                                }
+                            }
+
+                            <!-- Next Page -->
+                            <a href="?page=@(Model.Reports.PageNumber + 1)&pageSize=@Model.PageSize&sortBy=@Model.SortBy" class="rounded @(Model.Reports.PageNumber == Model.Reports.TotalPages ? "disabled" : "")">»</a>
+                        }
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Customer Reports End -->
+
+<!-- Report Detail Modal -->
+<div class="modal fade" id="reportDetailModal" tabindex="-1" aria-labelledby="reportDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportDetailModalLabel">Chi tiết báo cáo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="report-detail-content">
+                    <p><strong>ID Báo cáo:</strong> <span id="report-id"></span></p>
+                    <p><strong>Người báo cáo:</strong> <span id="reporter-name"></span></p>
+                    <p><strong>Chủ trọ:</strong> <span id="reported-owner"></span></p>
+                    <p><strong>Lý do:</strong> <span id="reason"></span></p>
+                    <p><strong>Mô tả:</strong> <span id="description"></span></p>
+                    <p><strong>Trạng thái:</strong> <span id="status"></span></p>
+                    <p><strong>Ngày tạo:</strong> <span id="created-at"></span></p>
+                    <p><strong>Phản hồi của chủ trọ:</strong> <span id="provider-response"></span></p>
+                    <p><strong>Ghi chú quản trị viên:</strong> <span id="admin-note"></span></p>
+                    <div id="evidence-images" class="d-flex flex-wrap gap-2">
+                        <p><strong>Ảnh bằng chứng:</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Truyền dữ liệu báo cáo sang JavaScript -->
+<script>
+    const reportsData = @Json.Serialize(Model.Reports.Items);
+</script>
+
+<style>
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .badge {
+        font-size: 0.9em;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .text-truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .custom-toast {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1050;
+        background: linear-gradient(90deg, #e0f7f9 50%, #a5d6a7 50%);
+        color: #1a3c34;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 15px 20px;
+        max-width: 300px;
+        font-family: Arial, sans-serif;
+        opacity: 1;
+        transition: opacity 0.5s ease-out;
+    }
+
+    .custom-toast.error {
+        background: linear-gradient(90deg, #ffebee 50%, #ef5350 50%);
+    }
+
+    .custom-toast .toast-icon {
+        width: 24px;
+        height: 24px;
+        background: #4caf50;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+
+    .custom-toast.error .toast-icon {
+        background: #ef5350;
+    }
+
+    .custom-toast .toast-icon::before {
+        content: "✔";
+        color: white;
+        font-size: 16px;
+    }
+
+    .custom-toast.error .toast-icon::before {
+        content: "✖";
+    }
+
+    .custom-toast .toast-close {
+        float: right;
+        font-size: 18px;
+        cursor: pointer;
+        color: #1a3c34;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+
+    .custom-toast .toast-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .custom-toast .toast-message {
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .evidence-images img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 5px;
+        margin: 5px;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastContainer = document.getElementById('toastContainer');
+        const apiErrorMessage = document.getElementById('apiErrorMessage');
+        const viewDetailButtons = document.querySelectorAll('.view-details');
+
+        // Show error message if exists
+        if (apiErrorMessage && apiErrorMessage.textContent) {
+            showToast('error', 'Lỗi', apiErrorMessage.textContent);
+        }
+
+        // Handle view details button click
+        viewDetailButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const reportId = parseInt(this.dataset.reportId);
+                const report = reportsData.find(r => r.reportId === reportId);
+
+                if (report) {
+                    document.getElementById('report-id').textContent = report.reportId;
+                    document.getElementById('reporter-name').textContent = report.isAnonymous ? 'Ẩn danh' : report.reporterName || 'N/A';
+                    document.getElementById('reported-owner').textContent = report.reportedOwnerName || 'N/A';
+                    document.getElementById('reason').textContent = report.reason || 'N/A';
+                    document.getElementById('description').textContent = report.description || 'Không có mô tả';
+                    document.getElementById('status').textContent = getStatusText(report.status);
+                    document.getElementById('created-at').textContent = new Date(report.createdAt).toLocaleString('vi-VN');
+                    document.getElementById('provider-response').textContent = report.providerResponse || 'Chưa có phản hồi';
+                    document.getElementById('admin-note').textContent = report.adminNote || 'Chưa có ghi chú';
+
+                    const evidenceContainer = document.getElementById('evidence-images');
+                    const evidenceImages = report.evidenceUrls || [];
+                    evidenceContainer.innerHTML = '<p><strong>Ảnh bằng chứng:</strong></p>';
+                    if (evidenceImages.length > 0) {
+                        evidenceImages.forEach(url => {
+                            const img = document.createElement('img');
+                            img.src = url;
+                            img.alt = 'Ảnh bằng chứng';
+                            img.addEventListener('click', () => {
+                                if (url && url !== '/img/placeholder.jpg' && url.startsWith('http')) {
+                                    window.open(url, '_blank');
+                                } else {
+                                    showToast('error', 'Lỗi', 'Không tìm thấy ảnh hợp lệ.');
+                                }
+                            });
+                            evidenceContainer.appendChild(img);
+                        });
+                    } else {
+                        evidenceContainer.innerHTML += '<span class="text-muted">Không có ảnh bằng chứng</span>';
+                    }
+                } else {
+                    showToast('error', 'Lỗi', 'Không tìm thấy báo cáo.');
+                }
+            });
+        });
+
+        function getStatusText(status) {
+            switch (status) {
+                case 0: return 'Đang chờ xử lý';
+                case 1: return 'Đang chờ xem xét';
+                case 2: return 'Đang chờ phản hồi từ chủ trọ';
+                case 3: return 'Đã giải quyết';
+                case 4: return 'Đã từ chối';
+                default: return 'Không xác định';
+            }
+        }
+
+        function showToast(type, title, message) {
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
+            toast.innerHTML = `
+                <span class="toast-icon"></span>
+                <div>
+                    <span class="toast-title">${title}</span>
+                    <p class="toast-message">${message}</p>
+                </div>
+                <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
+            `;
+            toastContainer.appendChild(toast);
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toastContainer.removeChild(toast);
+                }, 500);
+            }, 4500);
+        }
+    });
+</script>

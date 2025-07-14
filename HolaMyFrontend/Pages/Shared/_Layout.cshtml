@@ -151,14 +151,14 @@
         <div class="container topbar bg-primary d-none d-lg-block">
             <div class="d-flex justify-content-between">
                 <div class="top-info ps-2">
-                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a href="#" class="text-white">123 Street, New York</a></small>
-                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">Email@Example.com</a></small>
+                    <small class="me-3"><i class="fas fa-map-marker-alt me-2 text-secondary"></i> <a href="#" class="text-white">Holamy, PRN232</a></small>
+                    <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">Group 1</a></small>
                 </div>
-                <div class="top-link pe-2">
+                @* <div class="top-link pe-2">
                     <a href="#" class="text-white"><small class="text-white mx-2">Privacy Policy</small>/</a>
                     <a href="#" class="text-white"><small class="text-white mx-2">Terms of Use</small>/</a>
                     <a href="#" class="text-white"><small class="text-white ms-2">Sales and Refunds</small></a>
-                </div>
+                </div> *@
             </div>
         </div>
         <!-- Topbar End -->
@@ -170,10 +170,10 @@
                 </button>
                 <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
                     <div class="navbar-nav mx-auto">
-                        <a href="/" class="nav-item nav-link active">Home</a>
-                        <a href="/Shop" class="nav-item nav-link">Shop</a>
-                        <a href="/ShopDetail" class="nav-item nav-link">Shop Detail</a>
-                        <div class="nav-item dropdown">
+                        <a href="/Homepage" class="nav-item nav-link @(Context.Request.Path == "/Homepage" ? "active" : "")">Trang chủ</a>
+                        <a href="/Buildings/BuildingList" class="nav-item nav-link @(Context.Request.Path == "/Buildings/BuildingList" ? "active" : "")">Nhà trọ</a>
+                        <a href="/ShopDetail" class="nav-item nav-link ">Giới thiệu</a>
+                        @* <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                             <div class="dropdown-menu m-0 bg-secondary rounded-0">
                                 <a href="/Cart" class="dropdown-item">Cart</a>
@@ -182,15 +182,15 @@
                                 <a href="/Error" class="dropdown-item">404 Page</a>
                             </div>
                         </div>
-                        <a href="/Contact" class="nav-item nav-link">Contact</a>
+                        <a href="/Contact" class="nav-item nav-link">Contact</a> *@
                     </div>
                     <div class="d-flex m-3 me-0">
-                        <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
+                        @* <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
                         <a href="/Cart" class="position-relative me-4 my-auto">
                             <i class="fa fa-shopping-bag fa-2x"></i>
                             <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">@ViewData["CartCount"]</span>
                         </a>
-
+                        *@
                         <div class="dropdown me-4 my-auto" id="notification-container">
                             <a href="#" class="notification-icon dropdown-toggle" id="notification-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fa fa-bell fa-2x"></i>
@@ -215,9 +215,10 @@
                                     </div>
                                     <span id="user-name" class="text-primary"></span>
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end bg-secondary rounded-0 m-0" aria-labelledby="userDropdown">
+                                <ul class="dropdown-menu dropdown-menu-end rounded-0 m-0" aria-labelledby="userDropdown">
                                     <li><a class="dropdown-item" href="/Accounts/ViewProfileDetails">Xem thông tin tài khoản</a></li>
                                     <li><a class="dropdown-item" href="/Buildings/SavedBuildingList">Đã lưu </a></li>
+                                    <li><a class="dropdown-item" href="/Reports/CustomerReports">Khiếu nại </a></li>
                                     <li><a class="dropdown-item" href="#" onclick="logout()">Đăng xuất</a></li>
                                 </ul>
                             </div>
@@ -229,7 +230,7 @@
     </div>
     <!-- Navbar End -->
     <!-- Modal Search Start -->
-    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    @* <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
             <div class="modal-content rounded-0">
                 <div class="modal-header">
@@ -244,98 +245,77 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> *@
     <!-- Modal Search End -->
     <!-- Main Content -->
     @RenderBody()
 
     <!-- Footer Start -->
+    <!-- Footer Start -->
     <div class="container-fluid bg-dark text-white-50 footer pt-5 mt-5">
         <div class="container py-5">
-            <div class="pb-4 mb-4" style="border-bottom: 1px solid rgba(226, 175, 24, 0.5);">
-                <div class="row g-4">
-                    <div class="col-lg-3">
-                        <a href="#">
-                            <h1 class="text-primary mb-0">Fruitables</h1>
-                            <p class="text-secondary mb-0">Fresh products</p>
-                        </a>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="position-relative mx-auto">
-                            <input class="form-control border-0 w-100 py-3 px-4 rounded-pill" type="email" placeholder="Your Email">
-                            <button type="submit" class="btn btn-primary border-0 border-secondary py-3 px-4 position-absolute rounded-pill text-white" style="top: 0; right: 0;">Subscribe Now</button>
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="d-flex justify-content-end pt-3">
-                            <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href=""><i class="fab fa-youtube"></i></a>
-                            <a class="btn btn-outline-secondary btn-md-square rounded-circle" href=""><i class="fab fa-linkedin-in"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="row g-5">
+                <!-- Logo + mô tả -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="footer-item">
-                        <h4 class="text-light mb-3">Why People Like us!</h4>
-                        <p class="mb-4">Typesetting, remaining essentially unchanged. It was popularised in the 1960s with the like Aldus PageMaker including of Lorem Ipsum.</p>
-                        <a href="" class="btn border-secondary py-2 px-4 rounded-pill text-primary">Read More</a>
+                    <h1 class="text-primary mb-3">HolaMy</h1>
+                    <p class="text-secondary">Tìm kiếm nhà trọ, phòng trọ dễ dàng, tiện lợi với HolaMy. Luôn đồng hành cùng bạn trên mọi chặng đường an cư.</p>
+                    <div class="d-flex pt-3">
+                        <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a class="btn btn-outline-secondary me-2 btn-md-square rounded-circle" href="#"><i class="fab fa-youtube"></i></a>
+                        <a class="btn btn-outline-secondary btn-md-square rounded-circle" href="#"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
+
+                <!-- Về chúng tôi -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="d-flex flex-column text-start footer-item">
-                        <h4 class="text-light mb-3">Shop Info</h4>
-                        <a class="btn-link" href="/About">About Us</a>
-                        <a class="btn-link" href="/Contact">Contact Us</a>
-                        <a class="btn-link" href="#">Privacy Policy</a>
-                        <a class="btn-link" href="#">Terms & Condition</a>
-                        <a class="btn-link" href="#">Return Policy</a>
-                        <a class="btn-link" href="#">FAQs & Help</a>
-                    </div>
+                    <h5 class="text-light mb-3">Về chúng tôi</h5>
+                    <ul class="list-unstyled">
+                        <li><a class="btn-link" href="/About">Giới thiệu</a></li>
+                        <li><a class="btn-link" href="/Contact">Liên hệ</a></li>
+                        <li><a class="btn-link" href="#">Chính sách bảo mật</a></li>
+                        <li><a class="btn-link" href="#">Điều khoản sử dụng</a></li>
+                    </ul>
                 </div>
+
+                <!-- Tài khoản -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="d-flex flex-column text-start footer-item">
-                        <h4 class="text-light mb-3">Account</h4>
-                        <a class="btn-link" href="/Account">My Account</a>
-                        <a class="btn-link" href="/ShopDetail">Shop details</a>
-                        <a class="btn-link" href="/Cart">Shopping Cart</a>
-                        <a class="btn-link" href="#">Wishlist</a>
-                        <a class="btn-link" href="#">Order History</a>
-                        <a class="btn-link" href="#">International Orders</a>
-                    </div>
+                    <h5 class="text-light mb-3">Tài khoản</h5>
+                    <ul class="list-unstyled">
+                        <li><a class="btn-link" href="/Accounts/ViewProfileDetails">Thông tin tài khoản</a></li>
+                        <li><a class="btn-link" href="/Buildings/SavedBuildingList">Đã lưu</a></li>
+                        <li><a class="btn-link" href="/Cart">Giỏ hàng</a></li>
+                        <li><a class="btn-link" href="#">Lịch sử đặt phòng</a></li>
+                    </ul>
                 </div>
+
+                <!-- Liên hệ -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="footer-item">
-                        <h4 class="text-light mb-3">Contact</h4>
-                        <p>Address: 1429 Netus Rd, NY 48247</p>
-                        <p>Email: Example@gmail.com</p>
-                        <p>Phone: +0123 4567 8910</p>
-                        <p>Payment Accepted</p>
-                        <img src="~/img/payment.png" class="img-fluid" alt="">
-                    </div>
+                    <h5 class="text-light mb-3">Liên hệ</h5>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> Holamy</p>
+                    <p><i class="fas fa-envelope me-2"></i> support@holamy.vn</p>
+                    <p><i class="fas fa-phone-alt me-2"></i> +84 964 017 318</p>
+                    <img src="~/img/payment.png" class="img-fluid mt-2" alt="Các hình thức thanh toán">
                 </div>
             </div>
         </div>
     </div>
+    <!-- Footer End -->
     <!-- Footer End -->
     <!-- Copyright Start -->
     <div class="container-fluid copyright bg-dark py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
-                    <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Fruitables</a>, All right reserved.</span>
+                    <span class="text-light"><a href="#"><i class="fas fa-copyright text-light me-2"></i>Holamy</a>, All right reserved.</span>
                 </div>
                 <div class="col-md-6 my-auto text-center text-md-end text-white">
-                    Designed By <a class="border-bottom" href="https://htmlcodex.com">HTML Codex</a> Distributed By <a class="border-bottom" href="https://themewagon.com">ThemeWagon</a>
+                    Designed By <a class="border-bottom" href="https://htmlcodex.com">Group 1</a>
                 </div>
             </div>
         </div>
     </div>
     <!-- Copyright End -->
-    <!-- Back to Top -->
-    <a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+    
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -362,7 +342,17 @@
             };
             firebase.initializeApp(firebaseConfig);
 
+            updateAuthUI();
 
+            // Mở chat tự động khi lần đầu vào Homepage + load lại tin nhắn cũ
+            if (window.location.pathname === "/Homepage") {
+                
+                if (!localStorage.getItem('chatOpened')) {
+                    document.getElementById('chat-window').classList.remove('d-none');
+                    localStorage.setItem('chatOpened', 'true');
+                }
+            }
+            
             updateAuthUI();
 
             const notificationToggle = document.getElementById('notification-toggle');
@@ -409,14 +399,10 @@
         function getCookie(name) {
             const cookieString = document.cookie;
             const cookies = cookieString.split(';');
-
             for (let cookie of cookies) {
                 const [key, value] = cookie.trim().split('=');
-                if (key === name) {
-                    return decodeURIComponent(value);
-                }
+                if (key === name) return decodeURIComponent(value);
             }
-
             return null;
         }
 
@@ -509,7 +495,6 @@
                     };
 
                 } else {
-                    // localStorage.removeItem('jwtToken');
                     loginBtn.style.display = 'flex';
                     userProfile.style.display = 'none';
                     notificationContainer.style.display = 'none';
@@ -644,13 +629,207 @@
 
 
         function logout() {
-            // localStorage.removeItem('jwtToken');
+            sessionStorage.removeItem('chatHistory'); // xoá lịch sử chat
             window.location.href = '/HomePage/Logout';
         }
-        document.addEventListener('DOMContentLoaded', updateAuthUI);
+
+            function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const isOpen = !chatWindow.classList.contains('d-none');
+            chatWindow.classList.toggle('d-none', isOpen);
+
+            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+
+                if (!isOpen) {
+            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+            if (chatHistory.length === 0) {
+                const welcomeMessage = "Xin chào! Mình là HolaBot 👋\nBạn cần tìm phòng ở đâu, giá bao nhiêu? Hỏi mình nhé!";
+                saveMessageToSession("HolaBot", welcomeMessage, false);
+            } else {
+                loadMessagesFromSession();
+            }
+        }
+
+            loadMessagesFromSession();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            appendMessage('Bạn', message, true);
+            saveMessageToSession('Bạn', message, false);
+            input.value = '';
+
+            try {
+                const response = await fetch('http://localhost:8888/api/Chatbot/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': '*/*'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    const fallback = 'Xin lỗi, hiện tại mình không thể trả lời. Vui lòng thử lại sau.';
+                    appendMessage('HolaBot', fallback, false);
+                    saveMessageToSession('HolaBot', fallback, false);
+                    return;
+                }
+
+                const data = await response.json();
+                const botMessage = convertMarkdownToHTML(data.response);
+                appendMessage('HolaBot', botMessage, false, true);
+                saveMessageToSession('HolaBot', botMessage, true);
+
+            } catch (error) {
+                console.error('Chatbot error:', error);
+                const errMsg = 'Đã xảy ra lỗi. Bạn vui lòng thử lại sau nhé!';
+                appendMessage('HolaBot', errMsg, false);
+                saveMessageToSession('HolaBot', errMsg, false);
+            }
+        }
+
+        function appendMessage(sender, text, isUser, isHtml = false) {
+            const chat = document.getElementById('chat-messages');
+            const msg = document.createElement('div');
+            msg.className = `mb-2 ${isUser ? 'text-end' : 'text-start'}`;
+            msg.innerHTML = `<div class="d-inline-block px-3 py-2 rounded ${isUser ? 'bg-primary text-white' : 'bg-light text-dark'}" style="max-width: 90%; white-space: pre-wrap;">${isHtml ? text : escapeHtml(text)}</div>`;
+            chat.appendChild(msg);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, function (match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[match];
+            });
+        }
+
+        function convertMarkdownToHTML(markdown) {
+            return markdown
+                .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
+                .replace(/\((https?:\/\/[^\s()]+\.(jpg|jpeg|png|gif|webp)(\?[^()\s]*)?)\)/gi,
+                         '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function saveMessageToSession(sender, message, isHtml = false) {
+            let chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+            chatHistory.push({ sender, message, isHtml });
+            sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
+        }
+
+        function loadMessagesFromSession() {
+            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+            for (let msg of chatHistory) {
+                appendMessage(msg.sender, msg.message, msg.sender === 'Bạn', msg.isHtml);
+            }
+        }
     </script>
 
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
+<!-- ChatBot Start -->
+<div id="chatbot" class="position-fixed bottom-0 end-0 m-4" style="z-index: 1050;">
+    <div id="chat-window" class="card shadow-lg d-none" style="width: 320px; height: 400px; border-radius: 1rem;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center rounded-top">
+            <span><i class="fas fa-robot me-2"></i> HolaMy ChatBot</span>
+            <button class="btn btn-sm btn-light" onclick="toggleChat()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="card-body p-3 overflow-auto" id="chat-messages" style="height: 280px; background-color: #f9f9f9;"></div>
+        <div class="card-footer p-2 border-top">
+            <div class="input-group">
+                <input id="chat-input" type="text" class="form-control" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter') sendMessage()">
+                <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+    <button id="chat-toggle-btn" class="btn btn-primary btn-lg rounded-circle shadow" onclick="toggleChat()">
+        <i class="fas fa-comments"></i>
+    </button>
+
+</div>
+<!-- ChatBot End -->
+<!-- Back to Top -->
+<a href="#" class="btn btn-primary border-3 border-primary rounded-circle back-to-top"><i class="fa fa-arrow-up"></i></a>
+<style>
+
+    #chat-toggle-btn {
+        width: 45px;
+        height: 45px;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px; /* tùy chỉnh nếu icon to/nhỏ quá */
+    }
+
+    #chatbot #chat-window {
+        animation: fadeInUp 0.3s ease-in-out;
+    }
+
+    #chat-window{
+        position: fixed;
+        bottom: 20px;
+        right: 55px;
+        z-index: 1050;
+    }
+
+
+        /* Nút Chatbot */
+        #chatbot #chat-toggle-btn {
+            position: fixed;
+            bottom: 20px; /* giữ cố định 60px từ dưới */
+            right: 7px; /* theo đúng vị trí cũ */
+            z-index: 1050;
+        }
+
+
+    /* Nút Back-to-top */
+    .back-to-top {
+        position: fixed;
+        bottom: 80px; /* cao hơn nút Chatbot 60px */
+        right: 7px; /* cùng canh phải với Chatbot */
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1060; /* vượt trên Chatbot */
+        transition: opacity .3s;
+    }
+
+        .back-to-top:hover {
+            opacity: .8;
+        }
+
+
+
+   fadeInUp {
+        from
+
+    {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    }
+</style>
 </html>

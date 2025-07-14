@@ -29,42 +29,59 @@
                 <div class="row g-4">
                     <!-- Hình ảnh chính của tòa nhà -->
                     <div class="col-lg-6">
-                        <div class="border rounded overflow-hidden">
-                            <img id="main-image" src="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded main-image" alt="@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")" style="transition: all 0.3s ease-in-out; cursor: pointer;">
+                        <div class="border rounded overflow-hidden position-relative">
+                            <img id="main-image" src="@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded main-image" alt="@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")" style="transition: all 0.3s ease-in-out; cursor: pointer; width: 100%; height: 400px; object-fit: contain;">
                             <!-- Danh sách ảnh nhỏ từ buildingImages và room images -->
-                            <div class="d-flex flex-wrap mt-2">
-                                @foreach (var image in Model.Building.BuildingImages)
-                                {
-                                    <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail building-image" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s;" alt="@(image.Description ?? "Hình ảnh tòa nhà")">
-                                }
-                                @foreach (var room in Model.Building.Rooms)
-                                {
-                                    @foreach (var image in room.ImageUrl)
+                            <div class="thumbnail-container position-relative mt-2">
+                                <button class="thumbnail-nav prev-btn" style="display: none; position: absolute; left: -30px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; z-index: 10;"><</button>
+                                <div class="thumbnail-wrapper d-flex flex-nowrap overflow-hidden" style="max-width: 100%;">
+                                    @foreach (var image in Model.Building.BuildingImages)
                                     {
-                                        <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail room-image" data-room-id="@room.RoomId" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s;" alt="@(image.Description ?? "Hình ảnh phòng")">
+                                        <div class="thumbnail-item position-relative">
+                                            <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail building-image" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s; object-fit: contain;" alt="@(image.Description ?? "Hình ảnh tòa nhà")">
+                                        </div>
                                     }
-                                }
+                                    @foreach (var room in Model.Building.Rooms)
+                                    {
+                                        @foreach (var image in room.ImageUrl)
+                                        {
+                                            <div class="thumbnail-item position-relative">
+                                                <img src="@(image.ImageUrl ?? "/img/placeholder.jpg")" class="img-fluid rounded me-2 thumbnail room-image" data-room-id="@room.RoomId" data-room-type="@(room.RoomType?.RoomTypeName ?? "N/A")" data-room-price="@(room.Price?.ToString("C0", new System.Globalization.CultureInfo("vi-VN")) ?? "Liên hệ")" style="width: 70px; height: 70px; cursor: pointer; transition: transform 0.2s; object-fit: contain;" alt="@(image.Description ?? "Hình ảnh phòng")">
+                                                <span class="room-type-overlay position-absolute bottom-0 start-0 w-100 text-center text-white bg-dark bg-opacity-75" style="font-size: 0.7rem; padding: 2px;">@(room.RoomType?.RoomTypeName ?? "N/A")</span>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <button class="thumbnail-nav next-btn" style="display: none; position: absolute; right: -30px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; z-index: 10;">></button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Thông tin tòa nhà -->
                     <div class="col-lg-6">
-                        <h5 class="building-name fw-bold fs-3 mb-3">@(Model.Building.BuildingName ?? "Không xác định")</h5>
+                        <div class="d-flex align-items-center mb-3">
+                            <h5 class="building-name fw-bold fs-3 mb-0">@(Model.Building.BuildingName ?? "Không xác định")</h5>
+                            @if (Model.Building.VipBoxLevel.HasValue)
+                            {
+                                <span class="badge text-white ms-2 vip-label" style="background-color: @(Model.Building.VipBoxColor);">
+                                    @Model.Building.VipBoxName
+                                    <i class="fa @(Model.Building.VipBoxLevel.Value >= 2 ? "fa-crown" : "fa-star") ms-1"></i>
+                                </span>
+                            }
+                        </div>
                         @{
                             var minPrice = Model.Building.MinPrice;
                             var maxPrice = Model.Building.MaxPrice;
                         }
-
                         @if (minPrice.HasValue && maxPrice.HasValue)
                         {
                             if (minPrice == maxPrice)
                             {
-                                <p class="text-success fw-bold fs-3 mb-2">@minPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) / tháng</p>
+                                <p class="text-success fw-bold fs-3 mb-2 building-price">@minPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) </p>
                             }
                             else
                             {
-                                <p class="text-success fw-bold fs-3 mb-2">
+                                <p class="text-success fw-bold fs-3 mb-2 building-price">
                                     @minPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
                                     -
                                     @maxPrice.Value.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
@@ -74,11 +91,31 @@
                         }
                         else
                         {
-                            <p class="text-success fw-bold fs-3 mb-2">Liên hệ để biết giá</p>
+                            <p class="text-success fw-bold fs-3 mb-2 building-price">Liên hệ để biết giá</p>
                         }
-
+                        <!-- Display selected room type and price -->
+                        <div id="room-info" class="mb-3">
+                            <p id="selected-room-type" class="text-muted mb-1" hidden></p>
+                            <p id="selected-room-price" class="text-success fw-bold fs-3 mb-2 building-price"></p>
+                        </div>
                         <ul class="list-unstyled mb-3">
-                            <li class="mb-2"><i class="fa fa-clock me-2 text-primary"></i> Cập nhật: @Model.Building.UpdatedHoursBefore giờ trước</li>
+                            <li class="mb-2">
+                                <i class="fa fa-clock me-2 text-primary"></i> Cập nhật:
+                                @{
+                                    if (@Model.Building.UpdatedHoursBefore <= 24)
+                                    {
+                                        @($"{@Model.Building.UpdatedHoursBefore} giờ trước")
+                                    }
+                                    else if (@Model.Building.UpdatedHoursBefore <= 24 * 30)
+                                    {
+                                        @($"{@Model.Building.UpdatedHoursBefore / 24} ngày trước")
+                                    }
+                                    else
+                                    {
+                                        @($"{@Model.Building.UpdatedHoursBefore / (24 * 30)} tháng trước")
+                                    }
+                                }
+                            </li>
                             <li class="mb-2">
                                 <i class="fa fa-star me-2 text-primary"></i> Đánh giá:
                                 <span class="d-inline-flex">
@@ -96,7 +133,7 @@
                                     <span class="ms-2 text-muted">(4.0 - 10 reviews)</span>
                                 </span>
                             </li>
-                            <li class="mb-2"><i class="fa fa-info-circle me-2 text-primary"></i> Trạng thái: @(Model.Building.Status == 1 ? "Hoạt động" : "Không hoạt động")</li>
+                            <li class="mb-2"><i class="fa fa-info-circle me-2 text-primary"></i> Trạng thái: @(Model.Building.Status == HolaMy.Core.DTOs.BuildingDTOs.BuildingStatus.Approved ? "Hoạt động" : "Không hoạt động")</li>
                             <li class="mb-2"><i class="fa fa-map-marker-alt me-2 text-primary"></i> Địa chỉ: @(Model.Building.AddressDetail ?? "Không có thông tin"), @(Model.Building.Ward?.WardName ?? "Không xác định")</li>
                             <li class="mb-2"><i class="fa fa-user me-2 text-primary"></i> Chủ trọ: @(Model.Building.Provider?.Name ?? "Không xác định")</li>
                             <li class="mb-2"><i class="fa fa-phone me-2 text-primary"></i> Điện thoại: @(Model.Building.Provider?.PhoneNumber ?? "Không có thông tin")</li>
@@ -123,7 +160,8 @@
                         <!-- Save to List -->
                         <form method="post" asp-page="/Buildings/SavedBuildingList" id="saveForm">
                             <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
-                            <button type="submit" class="btn border border-secondary rounded-pill px-4 py-2 text-primary btn-hover">
+                            <input type="hidden" name="roomId" id="roomIdInput">
+                            <button type="submit" class="btn border border-secondary rounded-pill px-4 py-2 text-primary btn-hover" onclick="return validateSaveForm()">
                                 <i class="fas fa-cart-plus me-2 text-primary"></i> Lưu vào danh sách
                             </button>
                         </form>
@@ -133,8 +171,8 @@
                     <div class="col-lg-12">
                         <nav>
                             <div class="nav nav-tabs mb-3">
-                                <button class="nav-link active border-white border-bottom-0" type="button" role="tab" id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about" aria-controls="nav-about" aria-selected="true">Description</button>
-                                <button class="nav-link border-white border-bottom-0" type="button" role="tab" id="nav-reviews-tab" data-bs-toggle="tab" data-bs-target="#nav-reviews" aria-controls="nav-reviews" aria-selected="false">Reviews</button>
+                                <button class="nav-link active border-white border-bottom-0" type="button" role="tab" id="nav-about-tab" data-bs-toggle="tab" data-bs-target="#nav-about" aria-controls="nav-about" aria-selected="true">Mô tả</button>
+                                <button class="nav-link border-white border-bottom-0" type="button" role="tab" id="nav-reviews-tab" data-bs-toggle="tab" data-bs-target="#nav-reviews" aria-controls="nav-reviews" aria-selected="false">Đánh giá</button>
                             </div>
                         </nav>
                         <div class="tab-content mb-5">
@@ -180,45 +218,270 @@
                                     }
                                 </div>
                             </div>
+                            <!-- Phần bình luận (đã được cải thiện giao diện) -->
                             <div class="tab-pane" id="nav-reviews" role="tabpanel" aria-labelledby="nav-reviews-tab">
-                                <div class="d-flex">
-                                    <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                    <div class="">
-                                        <p class="mb-2" style="font-size: 14px;">March 5, 2025</p>
-                                        <div class="d-flex justify-content-between">
-                                            <h5>Jason Smith</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
+                                <div class="comment-section">
+                                    <!-- Thông báo -->
+                                    @if (TempData["CommentSuccessMessage"] != null)
+                                    {
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            @TempData["CommentSuccessMessage"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                         </div>
-                                        <p class="text-dark">Great room, very comfortable and clean!</p>
+                                    }
+                                    @if (TempData["CommentErrorMessage"] != null)
+                                    {
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            @TempData["CommentErrorMessage"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    }
+
+                                    <!-- Form bình luận -->
+                                    <div class="card comment-form-card mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="fas fa-edit me-2"></i>Viết bình luận</h5>
+                                            <form method="post" enctype="multipart/form-data" asp-page-handler="CreateComment" id="commentForm">
+                                                <input type="hidden" asp-for="NewComment.BuildingId" value="@Model.Building.BuildingId" />
+                                                <input type="hidden" asp-for="NewComment.UserId" value="@ViewData["UserId"]" />
+
+                                                <div class="form-group mb-3" id="contentInputContainer">
+                                                    <label asp-for="NewComment.Content" class="form-label">
+                                                        <i class="fas fa-comment-dots me-1"></i>Nội dung bình luận <span class="text-danger">*</span>
+                                                    </label>
+                                                    <textarea asp-for="NewComment.Content" class="form-control" rows="4" placeholder="Nhập văn bản (nếu có), sau đó thêm URL ảnh cách nhau bằng dấu cách (ví dụ: 'Nội dung http://example.com/image.jpg')" id="commentContent"></textarea>
+                                                    <span asp-validation-for="NewComment.Content" class="text-danger small"></span>
+                                                </div>
+
+                                                <div class="form-group mb-3">
+                                                    <label asp-for="NewComment.ContentType" class="form-label">
+                                                        <i class="fas fa-file-alt me-1"></i>Loại nội dung <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select asp-for="NewComment.ContentType" class="form-select" id="contentType" onchange="toggleCommentFields()">
+                                                        <option value="">Chọn loại nội dung</option>
+                                                        <option value="@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text">Chỉ văn bản</option>
+                                                        <option value="@HolaMyFrontend.Models.CommentDTOs.CommentContentType.image">Chỉ hình ảnh</option>
+                                                        <option value="@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text_image">Văn bản và hình ảnh</option>
+                                                    </select>
+                                                    <span asp-validation-for="NewComment.ContentType" class="text-danger small"></span>
+                                                </div>
+
+                                                <div class="form-group mb-3" id="fileInputContainer">
+                                                    <label asp-for="NewComment.File" class="form-label">
+                                                        <i class="fas fa-image me-1"></i>Tệp đính kèm (tùy chọn, tối đa 5MB)
+                                                    </label>
+                                                    <input type="file" asp-for="NewComment.File" class="form-control" accept="image/jpeg,image/png,image/gif" id="commentFile" />
+                                                    <div class="comment-preview mt-2 d-flex flex-wrap gap-2"></div>
+                                                    <span asp-validation-for="NewComment.File" class="text-danger small"></span>
+                                                </div>
+
+                                                <div class="form-group mb-4">
+                                                    <label asp-for="NewComment.Rating" class="form-label">
+                                                        <i class="fas fa-star me-1"></i>Điểm đánh giá (1-5)
+                                                    </label>
+                                                    <div class="rating-stars mb-2">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            <i class="far fa-star rating-star" data-value="@i"></i>
+                                                        }
+                                                    </div>
+                                                    <input asp-for="NewComment.Rating" class="form-control d-none" type="number" step="0.1" min="1" max="5" id="ratingValue" />
+                                                    <span asp-validation-for="NewComment.Rating" class="text-danger small"></span>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane me-2"></i>Gửi bình luận
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="d-flex">
-                                    <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                    <div class="">
-                                        <p class="mb-2" style="font-size: 14px;">March 10, 2025</p>
-                                        <div class="d-flex justify-content-between">
-                                            <h5>Sam Peters</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
+
+                                    <!-- Danh sách bình luận -->
+                                    <div class="comments-list">
+                                        <h5 class="mb-4">
+                                            <i class="fas fa-comments me-2"></i>Bình luận hiện có
+                                            @if (Model.BuildingComments.Any())
+                                            {
+                                                <span class="badge bg-primary rounded-pill ms-2">@Model.BuildingComments.Count</span>
+                                            }
+                                        </h5>
+
+                                        @if (Model.BuildingComments.Any())
+                                        {
+                                            <div class="average-rating mb-4 p-3 bg-light rounded">
+                                                <h6 class="d-flex align-items-center mb-2">
+                                                    <i class="fas fa-chart-line me-2 text-primary"></i>Điểm đánh giá trung bình:
+                                                </h6>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rating-stars me-3">
+                                                        @{
+                                                            var avgRating = Model.BuildingComments.Where(c => c.Rating.HasValue).Average(c => c.Rating.Value);
+                                                            var fullStars = (int)Math.Floor(avgRating);
+                                                            var hasHalfStar = avgRating % 1 >= 0.5;
+                                                        }
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= fullStars)
+                                                            {
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            }
+                                                            else if (i == fullStars + 1 && hasHalfStar)
+                                                            {
+                                                                <i class="fas fa-star-half-alt text-warning"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star text-warning"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <span class="fw-bold">@avgRating.ToString("0.0") / 5.0</span>
+                                                    <span class="text-muted ms-2">(@Model.BuildingComments.Count(c => c.Rating.HasValue) đánh giá)</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <p class="text-dark">Good location but a bit small for my needs.</p>
+
+                                            @foreach (var comment in Model.BuildingComments)
+                                            {
+                                                <div class="card comment-card mb-3">
+                                                    <div class="card-body">
+                                                        <div class="d-flex">
+                                                            <!-- Avatar -->
+                                                            <div class="flex-shrink-0 me-3">
+                                                                @{
+                                                                    var avatarUrl = string.IsNullOrEmpty(comment.AvatarUrl) ? "/img/avatar.jpg" : comment.AvatarUrl;
+                                                                }
+                                                                <img src="@avatarUrl"
+                                                                     class="img-fluid rounded-circle avatar-img"
+                                                                     alt="Avatar của @(comment.UserName ?? "Ẩn danh")"
+                                                                     onerror="this.src='/img/default-avatar.jpg'; this.classList.add('avatar-fallback');">
+                                                            </div>
+
+                                                            <!-- Nội dung bình luận -->
+                                                            <div class="flex-grow-1">
+                                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                    <h6 class="mb-0 fw-bold">@(comment.UserName ?? "Ẩn danh")</h6>
+                                                                    <small class="text-muted">
+                                                                        <i class="far fa-clock me-1"></i>@comment.CreatedAt.ToString("g")
+                                                                    </small>
+                                                                </div>
+
+                                                                @if (comment.Rating.HasValue)
+                                                                {
+                                                                    <div class="mb-2">
+                                                                        <div class="rating-stars d-inline-block me-2">
+                                                                            @for (int i = 1; i <= 5; i++)
+                                                                            {
+                                                                                if (i <= Math.Floor(comment.Rating.Value))
+                                                                                {
+                                                                                    <i class="fas fa-star text-warning small"></i>
+                                                                                }
+                                                                                else if (i <= Math.Ceiling(comment.Rating.Value) && comment.Rating.Value % 1 > 0)
+                                                                                {
+                                                                                    <i class="fas fa-star-half-alt text-warning small"></i>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <i class="far fa-star text-warning small"></i>
+                                                                                }
+                                                                            }
+                                                                        </div>
+                                                                        <span class="text-muted small">@comment.Rating.Value.ToString("0.0") điểm</span>
+                                                                    </div>
+                                                                }
+
+                                                                <!-- Hiển thị nội dung/ảnh -->
+                                                                @if (comment.ContentType == HolaMyFrontend.Models.CommentDTOs.CommentContentType.image)
+                                                                {
+                                                                    @if (!string.IsNullOrEmpty(comment.Content) && (comment.Content.StartsWith("http") || comment.Content.StartsWith("https")))
+                                                                    {
+                                                                        <div class="comment-media mb-2">
+                                                                            <img src="@comment.Content"
+                                                                                 class="img-fluid rounded"
+                                                                                 style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                                                                                 alt="Ảnh bình luận"
+                                                                                 onerror="this.style.display='none';">
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                                else if (comment.ContentType == HolaMyFrontend.Models.CommentDTOs.CommentContentType.text_image)
+                                                                {
+                                                                    @if (!string.IsNullOrEmpty(comment.Content))
+                                                                    {
+                                                                        @if (System.Text.RegularExpressions.Regex.IsMatch(comment.Content, @"(http|https)://[^\s]+"))
+                                                                        {
+                                                                            var imageUrl = System.Text.RegularExpressions.Regex.Match(comment.Content, @"(http|https)://[^\s]+").Value;
+                                                                            var textContent = System.Text.RegularExpressions.Regex.Replace(comment.Content, @"(http|https)://[^\s]+", "").Trim();
+
+                                                                            @if (!string.IsNullOrEmpty(textContent))
+                                                                            {
+                                                                                <p class="comment-text mb-2">@textContent</p>
+                                                                            }
+                                                                            <div class="comment-media mb-2">
+                                                                                <img src="@imageUrl"
+                                                                                     class="img-fluid rounded"
+                                                                                     style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                                                                                     alt="Ảnh bình luận"
+                                                                                     onerror="this.style.display='none';">
+                                                                            </div>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <p class="comment-text mb-2">@comment.Content</p>
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="comment-text mb-2">@(string.IsNullOrEmpty(comment.Content) ? "Không có nội dung" : comment.Content)</p>
+                                                                }
+
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="text-center py-4">
+                                                <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row mb-3">
+                            <!-- YouTube Video -->
+                            @if (!string.IsNullOrWhiteSpace(Model.Building.YouTubeVideoUrl))
+                            {
+                                <div class="col-md-6">
+                                    <h5>Video giới thiệu</h5>
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="@Model.Building.YouTubeVideoUrl" title="YouTube video" allowfullscreen></iframe>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Google Map -->
+                            @if (!string.IsNullOrWhiteSpace(Model.Building.GoogleMapUrl))
+                            {
+                                <div class="col-md-6">
+                                    <h5>Bản đồ</h5>
+                                    <div class="ratio ratio-16x9">
+                                        <iframe src="@Model.Building.GoogleMapUrl" title="Google Map" allowfullscreen="" loading="lazy"></iframe>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
                     </div>
-                    <form action="/submit-review" method="POST" id="reviewForm">
+                    @* <form action="/submit-review" method="POST" id="reviewForm">
                         <h4 class="mb-4 fw-bold">Leave a Review</h4>
                         <div class="mb-3">
                             <textarea class="form-control border rounded" name="comment" placeholder="Your Review *" rows="5" required></textarea>
@@ -237,7 +500,7 @@
                         <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
                         <input type="hidden" name="tenantId" value="2">
                         <button type="submit" class="btn btn-primary rounded">Submit</button>
-                    </form>
+                    </form> *@
                 </div>
             </div>
             <div class="col-lg-4 col-xl-3">
@@ -277,14 +540,6 @@
                         </div>
                     </div>
                     <div class="col-lg-12">
-                        <form action="/search" method="GET">
-                            <div class="input-group w-100 mx-auto d-flex mb-4">
-                                <input type="search" name="query" class="form-control p-3" placeholder="Search rentals..." aria-describedby="search-icon-1" required>
-                                <button type="submit" class="input-group-text p-3 border-0" id="search-icon-1"><i class="fa fa-search"></i></button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-lg-12">
                         <h4 class="mb-3">Mới nhất</h4>
                         @foreach (var building in Model.FeaturedBuildings)
                         {
@@ -293,14 +548,37 @@
                                     <img src="@building.ThumbnailUrl" class="img-fluid rounded" alt="@building.BuildingName">
                                 </div>
                                 <div>
-                                    <h6 class="mb-2">@building.BuildingName</h6>
-                                    <div class="d-flex mb-2">
-                                        <i class="fa fa-star text-secondary"></i>
-                                        <i class="fa fa-star text-secondary"></i>
-                                        <i class="fa fa-star text-secondary"></i>
-                                        <i class="fa fa-star text-secondary"></i>
-                                        <i class="fa fa-star"></i>
-                                    </div>
+                                    @if (building.VipBoxLevel.HasValue)
+                                    {
+                                        <span class="badge text-white ms-2 vip-label" style="background-color: @(building.VipBoxColor)">
+                                            @building.VipBoxName
+                                            @* <i class="fa @(building.VipBoxLevel.Value >= 2 ? "fa-crown" : "fa-star") ms-1"></i> *@
+                                        </span>
+                                    }
+                                    <h6 class="mb-2">
+                                        @building.BuildingName
+                                    </h6>
+                                    @if (building.Rating.HasValue)
+                                    {
+                                        <div class="d-flex mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= Math.Floor(building.Rating.Value))
+                                                {
+                                                    <i class="fa fa-star text-warning"></i>
+                                                }
+                                                else if (i <= Math.Ceiling(building.Rating.Value) && building.Rating.Value % 1 > 0)
+                                                {
+                                                    <i class="fa fa-star-half-alt text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="fa fa-star text-body"></i>
+                                                }
+                                            }
+                                            <span class="ms-2 text-muted">(@building.Rating.Value.ToString("0.0"))</span>
+                                        </div>
+                                    }
                                     <div class="d-flex mb-2">
                                         <h5 class="fw-bold me-2">@(building.DisplayPrice?.ToString("N0") ?? "Liên hệ") VNĐ/tháng</h5>
                                     </div>
@@ -325,7 +603,7 @@
                     {
                         <div class="border border-primary rounded position-relative vesitable-item">
                             <div class="vesitable-img">
-                                <img src="@(building.ThumbnailUrl ?? "/img/placeholder.jpg")" class="img-fluid w-100 rounded-top" alt="@building.BuildingName">
+                                <img src="@(building.ThumbnailUrl ?? "/img/placeholder.jpg")" class="img-fluid w-100 rounded-top" style="height: 200px; object-fit: cover;" alt="@building.BuildingName">
                             </div>
                             <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">@building.WardName</div>
                             <div class="p-4 pb-0 rounded-bottom">
@@ -431,6 +709,96 @@
 </div>
 
 <style>
+    /* Comment Section Styles */
+    .comment-section {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .comment-form-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+    }
+
+        .comment-form-card .card-title {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+    .comment-card {
+        border: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        border-radius: 8px;
+    }
+
+        .comment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+    .comment-text {
+        white-space: pre-line;
+        line-height: 1.6;
+    }
+
+    .comment-media img {
+        transition: transform 0.3s;
+        cursor: zoom-in;
+    }
+
+        .comment-media img:hover {
+            transform: scale(1.02);
+        }
+
+    .rating-stars {
+        color: #ffc107;
+        font-size: 1.1rem;
+    }
+
+        .rating-stars .rating-star {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .rating-stars .rating-star:hover {
+                transform: scale(1.2);
+            }
+
+    .average-rating {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .comment-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .avatar-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+
+    .avatar-fallback {
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-weight: bold;
+    }
+
+    .comment-preview img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
     .modal-content {
         border-radius: 10px;
     }
@@ -543,6 +911,49 @@
             font-size: 14px;
             margin: 0;
         }
+
+    .thumbnail-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .thumbnail-wrapper {
+        transition: transform 0.3s ease;
+    }
+
+    .thumbnail-nav:hover {
+        background: rgba(0,0,0,0.7);
+    }
+
+    .thumbnail-item {
+        position: relative;
+        display: inline-block;
+    }
+
+    .room-type-overlay {
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    #room-info p {
+        transition: all 0.3s ease;
+    }
+
+    .avatar-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border: 2px solid #ddd; /* Thêm viền để avatar nổi bật hơn */
+        border-radius: 50%;
+    }
+
+    .avatar-fallback {
+        border-color: #ccc; /* Màu viền khác khi dùng ảnh fallback */
+        opacity: 0.8; /* Giảm độ sáng để phân biệt */
+    }
+
 </style>
 
 <script>
@@ -555,7 +966,53 @@
         const reportButton = document.getElementById('reportButton');
         const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
         const defaultBuildingImage = '@(Model.Building.BuildingImages.FirstOrDefault(i => i.IsThumbnail == true)?.ImageUrl ?? Model.Building.BuildingImages.FirstOrDefault()?.ImageUrl ?? "/img/placeholder.jpg")';
-        // Xử lý click vào nút Báo xấu
+        const thumbnailWrapper = document.querySelector('.thumbnail-wrapper');
+        const prevBtn = document.querySelector('.thumbnail-nav.prev-btn');
+        const nextBtn = document.querySelector('.thumbnail-nav.next-btn');
+        const selectedRoomType = document.getElementById('selected-room-type');
+        const selectedRoomPrice = document.getElementById('selected-room-price');
+        const buildingPrice = document.querySelector('.building-price');
+        const roomIdInput = document.getElementById('roomIdInput');
+        let currentPosition = 0;
+        const thumbnailWidth = 78; // 70px width + 8px margin-right
+        const visibleThumbnails = 5; // Number of thumbnails visible at a time
+        const totalThumbnails = thumbnails.length;
+
+        // Show/hide navigation buttons based on number of thumbnails
+        if (totalThumbnails > visibleThumbnails) {
+            prevBtn.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+
+        // Handle previous button click
+        prevBtn.addEventListener('click', function () {
+            if (currentPosition > 0) {
+                currentPosition--;
+                thumbnailWrapper.style.transform = `translateX(-${currentPosition * thumbnailWidth}px)`;
+                updateNavButtons();
+            }
+        });
+
+        // Handle next button click
+        nextBtn.addEventListener('click', function () {
+            if (currentPosition < totalThumbnails - visibleThumbnails) {
+                currentPosition++;
+                thumbnailWrapper.style.transform = `translateX(-${currentPosition * thumbnailWidth}px)`;
+                updateNavButtons();
+            }
+        });
+
+        // Update navigation button states
+        function updateNavButtons() {
+            prevBtn.disabled = currentPosition === 0;
+            nextBtn.disabled = currentPosition >= totalThumbnails - visibleThumbnails;
+            prevBtn.style.opacity = currentPosition === 0 ? '0.5' : '1';
+            nextBtn.style.opacity = currentPosition >= totalThumbnails - visibleThumbnails ? '0.5' : '1';
+        }
+
+        updateNavButtons();
+
+        // Handle report button click
         if (reportButton) {
             reportButton.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -563,15 +1020,15 @@
                 if (!authToken) {
                     showToast('error', 'Lỗi', 'Vui lòng đăng nhập để báo xấu.');
                     setTimeout(() => {
-                        window.location.href = '/HomePage/Login'; // Điều chỉnh URL đăng nhập phù hợp
-                    }, 2000); // Chuyển hướng sau 2 giây
+                        window.location.href = '/HomePage/Login';
+                    }, 2000);
                 } else {
-                    reportModal.show(); // Mở modal nếu đã đăng nhập
+                    reportModal.show();
                 }
             });
         }
 
-        // Xử lý click vào ảnh chính để mở ImageUrl trong tab mới
+        // Handle main image click to open in new tab
         mainImage.addEventListener('click', function (e) {
             e.preventDefault();
             const imageUrl = this.src;
@@ -582,16 +1039,15 @@
             }
         });
 
-        // Xử lý click vào thumbnail để cập nhật ảnh chính
+        // Handle thumbnail click to update main image, room type, and price
         thumbnails.forEach(thumbnail => {
             thumbnail.addEventListener('click', function (e) {
                 e.preventDefault();
-                // Cập nhật ảnh chính
                 mainImage.src = this.src;
                 mainImage.alt = this.alt;
 
-                // Nếu click vào ảnh của tòa nhà, bỏ chọn tất cả checkbox loại phòng
                 if (this.classList.contains('building-image')) {
+                    // Reset to building defaults
                     roomCheckboxes.forEach(cb => {
                         cb.checked = false;
                         const label = document.querySelector(`label[for="room-${cb.value}"]`);
@@ -599,10 +1055,14 @@
                             label.classList.remove('active');
                         }
                     });
-                }
-                // Nếu click vào ảnh của phòng, chọn checkbox tương ứng
-                else if (this.classList.contains('room-image')) {
+                    selectedRoomType.textContent = '';
+                    selectedRoomPrice.textContent = '';
+                    buildingPrice.style.display = 'block'; 
+                    roomIdInput.value = '';
+                } else if (this.classList.contains('room-image')) {
                     const roomId = this.dataset.roomId;
+                    const roomType = this.dataset.roomType;
+                    const roomPrice = this.dataset.roomPrice;
                     roomCheckboxes.forEach(cb => {
                         const isCurrent = cb.value === roomId;
                         cb.checked = isCurrent;
@@ -615,14 +1075,16 @@
                             }
                         }
                     });
+                    selectedRoomType.textContent = `Loại phòng: ${roomType}`;
+                    selectedRoomPrice.textContent = `${roomPrice} / tháng`;
+                    buildingPrice.style.display = 'none';
                 }
             });
         });
 
-        // Xử lý checkbox loại phòng
+        // Handle room checkbox change
         roomCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function () {
-                // Bỏ chọn tất cả các checkbox khác và cập nhật trạng thái active
                 roomCheckboxes.forEach(cb => {
                     const label = document.querySelector(`label[for="room-${cb.value}"]`);
                     if (cb !== this) {
@@ -641,18 +1103,153 @@
                     }
                 });
 
-                // Cập nhật ảnh chính khi chọn checkbox
                 if (this.checked) {
                     mainImage.src = this.dataset.thumbnail;
                     mainImage.alt = `Hình ảnh phòng ${this.value}`;
+                    const thumbnail = document.querySelector(`.room-image[data-room-id="${this.value}"]`);
+                    if (thumbnail) {
+                        selectedRoomType.textContent = `Loại phòng: ${thumbnail.dataset.roomType}`;
+                        selectedRoomPrice.textContent = thumbnail.dataset.roomPrice;
+                        buildingPrice.style.display = 'none';
+                        roomIdInput.value = this.value; // Sửa: Cập nhật roomIdInput với this.value
+                        console.log(`Checkbox change: roomId set to ${this.value}`); // Debug
+                    }
                 } else {
                     mainImage.src = defaultBuildingImage;
                     mainImage.alt = '@(Model.Building.BuildingName ?? "Hình ảnh tòa nhà")';
+                    selectedRoomType.textContent = '';
+                    selectedRoomPrice.textContent = '';
+                    buildingPrice.style.display = 'block';
+                    roomIdInput.value = ''; // Reset roomId
+                    console.log('Checkbox change: roomId reset to empty'); // Debug
                 }
             });
         });
+        // Xử lý rating stars
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            document.getElementById('ratingValue').value = value;
 
-        // Xử lý đánh giá sao
+            // Cập nhật hiển thị sao
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'text-warning');
+                } else {
+                    s.classList.remove('fas', 'text-warning');
+                    s.classList.add('far');
+                }
+            });
+        });
+    });
+
+    // Xử lý hiển thị ảnh khi chọn file
+    document.getElementById('commentFile')?.addEventListener('change', function(e) {
+        const previewContainer = document.querySelector('.comment-preview');
+        previewContainer.innerHTML = '';
+
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                previewContainer.appendChild(img);
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Toggle các trường theo loại nội dung
+    function toggleCommentFields() {
+        const contentType = document.getElementById('contentType').value;
+        const contentInput = document.getElementById('contentInputContainer');
+        const fileInput = document.getElementById('fileInputContainer');
+
+        if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.image') {
+            contentInput.style.display = 'none';
+            fileInput.style.display = 'block';
+        } else if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text') {
+            contentInput.style.display = 'block';
+            fileInput.style.display = 'none';
+        } else {
+            contentInput.style.display = 'block';
+            fileInput.style.display = 'block';
+        }
+    }
+
+                document.addEventListener('DOMContentLoaded', function () {
+        const commentFileInput = document.getElementById('commentFile');
+        const commentPreview = document.querySelector('.comment-preview');
+        const contentTypeSelect = document.getElementById('contentType');
+        const commentContent = document.getElementById('commentContent');
+        const contentInputContainer = document.getElementById('contentInputContainer');
+        const fileInputContainer = document.getElementById('fileInputContainer');
+
+        function toggleCommentFields() {
+            const contentType = contentTypeSelect.value;
+            if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.image') {
+                commentContent.removeAttribute('required');
+                contentInputContainer.style.display = 'none';
+                fileInputContainer.style.display = 'block';
+                commentFileInput.setAttribute('required', 'required');
+            } else if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text') {
+                commentContent.setAttribute('required', 'required');
+                contentInputContainer.style.display = 'block';
+                fileInputContainer.style.display = 'none';
+                commentFileInput.removeAttribute('required');
+            } else if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text_image') {
+                commentContent.setAttribute('required', 'required');
+                contentInputContainer.style.display = 'block';
+                fileInputContainer.style.display = 'block';
+                commentFileInput.setAttribute('required', 'required');
+            } else {
+                contentInputContainer.style.display = 'block';
+                fileInputContainer.style.display = 'block';
+                commentContent.removeAttribute('required');
+                commentFileInput.removeAttribute('required');
+            }
+        }
+
+        if (contentTypeSelect) {
+            contentTypeSelect.addEventListener('change', toggleCommentFields);
+            toggleCommentFields(); // Gọi khi tải trang
+        }
+
+        if (commentFileInput) {
+            commentFileInput.addEventListener('change', function () {
+                commentPreview.innerHTML = '';
+                const file = this.files[0];
+                if (file) {
+                    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                        showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                        this.value = '';
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('error', 'Lỗi', 'Ảnh không được vượt quá 5MB.');
+                        this.value = '';
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '100px';
+                        img.style.maxHeight = '100px';
+                        img.style.margin = '5px';
+                        img.style.borderRadius = '5px';
+                        commentPreview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Đảm bảo các hàm toast và thumbnail đã được định nghĩa trước đó
+    });
+        // Handle star rating
         const stars = document.querySelectorAll('.rating-stars i');
         const ratingInput = document.getElementById('rating-value');
 
@@ -672,8 +1269,26 @@
                 });
             });
         });
+            document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            document.getElementById('ratingValue').value = value;
 
-        // Xử lý file input cho nhiều ảnh
+            // Update star display
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'text-warning');
+                } else {
+                    s.classList.remove('fas', 'text-warning');
+                    s.classList.add('far');
+                }
+            });
+        });
+    });
+
+        // Handle file input for evidence images
         const evidenceFilesContainer = document.getElementById('evidenceFilesContainer');
         const fileInput = evidenceFilesContainer.querySelector('input[name="evidenceFiles"]');
 
@@ -747,18 +1362,18 @@
                 }
             });
         }
-        
+
         function showToast(type, title, message) {
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
             toast.innerHTML = `
-                        <span class="toast-icon"></span>
-                        <div>
-                            <span class="toast-title">${title}</span>
-                            <p class="toast-message">${message}</p>
-                        </div>
-                        <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
-                    `;
+                    <span class="toast-icon"></span>
+                    <div>
+                        <span class="toast-title">${title}</span>
+                        <p class="toast-message">${message}</p>
+                    </div>
+                    <button type="button" class="toast-close" onclick="this.parentElement.style.display='none'">×</button>
+                `;
             toastContainer.appendChild(toast);
             toast.style.display = 'block';
 

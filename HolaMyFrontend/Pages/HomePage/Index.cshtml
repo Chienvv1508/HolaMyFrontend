@@ -1,5 +1,527 @@
 ﻿@page
 @model HolaMyFrontend.Pages.HomePage.IndexModel
 @{
+    ViewData["Title"] = "Trang chủ";
 }
-<h1>Hello </h1>
+
+<!-- Hero Start -->
+<div class="container-fluid py-5 mb-5 hero-header">
+    <div class="container py-5">
+        <div class="row g-5 align-items-center">
+            <div class="col-md-12 col-lg-7">
+                <h4 class="mb-3 text-secondary">Tìm phòng trọ phù hợp với bạn</h4>
+                <h1 class="mb-5 display-3 text-primary">Dễ dàng tìm kiếm & lựa chọn</h1>
+                <form method="get" asp-page="/Buildings/BuildingList" class="position-relative mx-auto">
+                    <input name="search" value="@Model.Search" class="form-control border-2 border-secondary w-75 py-3 px-4 rounded-pill"
+                           type="text" placeholder="Tìm kiếm theo tên, địa chỉ, loại phòng..." />
+                    <button type="submit"
+                            class="btn btn-primary border-2 border-secondary py-3 px-4 position-absolute rounded-pill text-white h-100"
+                            style="top: 0; right: 25%;">
+                        Tìm ngay
+                    </button>
+                </form>
+            </div>
+            <div class="col-md-12 col-lg-5">
+                <div id="carouselId" class="carousel slide position-relative" data-bs-ride="carousel">
+                    <div class="carousel-inner" role="listbox">
+                        @if (Model.RoomTypeListDTO != null && Model.RoomTypeListDTO.Count > 0)
+                        {
+                            var index = 1;
+                            @foreach (var roomType in Model.RoomTypeListDTO)
+                            {
+                                var isActive = index == 1 ? "active" : "";
+                                <div class="carousel-item @isActive rounded">
+                                    <div style="height: 350px; overflow: hidden;">
+                                        <img src="img/roomType/roomType@(index).jpg" class="img-fluid w-100 h-100 object-fit-cover rounded" alt="Slide @(index)"
+                                             style="height: 100%; width: 100%; object-fit: cover;" />
+                                    </div>
+                                    <a href="/Buildings/BuildingList?roomTypeIds=@roomType.RoomTypeId"
+                                    class="btn px-4 py-2 text-white rounded">@roomType.RoomTypeName</a>
+                                </div>
+                                index++;
+                            }
+                        }
+                        
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Hero End -->
+<!-- Tính Năng Nổi Bật Start -->
+<div class="container-fluid featurs py-5">
+    <div class="container py-5">
+        <div class="row g-4">
+            <!-- Đăng tin dễ dàng -->
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded bg-light p-4" style="width: 100%; height: 320px;">
+                    <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
+                        <i class="fas fa-upload fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>Đăng tin dễ dàng</h5>
+                        <p class="mb-0">Chủ trọ có thể đăng bài chỉ với vài bước đơn giản, hoàn toàn miễn phí.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Tiếp cận người thuê -->
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded bg-light p-4" style="width: 100%; height: 320px;">
+                    <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
+                        <i class="fas fa-bullhorn fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>Tiếp cận người thuê</h5>
+                        <p class="mb-0">Hàng nghìn lượt tìm kiếm mỗi ngày, tăng cơ hội lấp đầy phòng trống.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Tìm phòng nhanh chóng -->
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded bg-light p-4" style="width: 100%; height: 320px;">
+                    <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
+                        <i class="fas fa-search-location fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>Tìm phòng nhanh chóng</h5>
+                        <p class="mb-0">Lọc theo giá, khu vực, tiện nghi chỉ trong vài giây.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Hỗ trợ tận tình -->
+            <div class="col-md-6 col-lg-3">
+                <div class="featurs-item text-center rounded bg-light p-4" style="width: 100%; height: 320px;">
+                    <div class="featurs-icon btn-square rounded-circle bg-secondary mb-5 mx-auto">
+                        <i class="fas fa-comments fa-3x text-white"></i>
+                    </div>
+                    <div class="featurs-content text-center">
+                        <h5>Hỗ trợ tận tình</h5>
+                        <p class="mb-0">Đội ngũ HolaMy luôn sẵn sàng giải đáp thắc mắc & xử lý nhanh chóng.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tính Năng Nổi Bật End -->
+<!-- Custom Styles: cố định kích thước card và ảnh cover -->
+<style>
+    .fruite-item {
+        height: 450px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .fruite-img {
+        flex: 0 0 200px;
+        overflow: hidden;
+    }
+
+        .fruite-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .fruite-item .p-4 {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+        .fruite-item .p-4 p {
+            flex: 1;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+    .vesitable-item {
+        display: flex;
+        flex-direction: column;
+        height: 400px;
+    }
+
+    .vesitable-img {
+        flex: 0 0 180px;
+        overflow: hidden;
+    }
+
+        .vesitable-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+</style>
+
+<div class="container-fluid fruite py-5">
+    <div class="container py-5">
+        <div class="tab-class text-center">
+            <div class="row g-4">
+                <div class="col-lg-4 text-start">
+                    <h1>Tòa nhà</h1>
+                </div>
+                <div class="col-lg-8 text-end">
+                    <ul class="nav nav-pills d-inline-flex text-center mb-5">
+                        <li class="nav-item">
+                            <a class="d-flex m-2 py-2 bg-light rounded-pill active"
+                               data-bs-toggle="pill" href="#tab-all">
+                                <span class="text-dark" style="width: 130px;">Tất cả tòa nhà</span>
+                            </a>
+                        </li>
+                        @foreach (var ward in Model.TopWardBuildings.Keys.Select((w, i) => new { Name = w, Index = i + 1 }))
+                        {
+                            <li class="nav-item">
+                                <a class="d-flex m-2 py-2 bg-light rounded-pill"
+                                   data-bs-toggle="pill" href="#tab-@ward.Index">
+                                    <span class="text-dark" style="width: 130px;">@ward.Name</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <!-- All Buildings: chỉ show tối đa 8 -->
+                <div id="tab-all" class="tab-pane fade show active p-0">
+                    <div class="row g-4">
+                        @foreach (var b in Model.Buildings.Take(8))
+                        {
+                            <div class="col-md-6 col-lg-4 col-xl-3">
+                                <div class="rounded position-relative fruite-item">
+                                    <div class="fruite-img">
+                                        <img src="@b.ThumbnailUrl"
+                                             alt="@b.BuildingName" />
+                                    </div>
+                                    <div class="text-white bg-secondary px-3 py-1 rounded position-absolute"
+                                         style="top: 10px; left: 10px;">
+                                        @b.WardName
+                                    </div>
+                                    <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                        <h4>@b.BuildingName</h4>
+                                        <p>@b.Address</p>
+                                        <div class="d-flex justify-content-between flex-lg-wrap">
+                                            <p class="text-dark fs-5 fw-bold mb-0">
+                                                @((b.DisplayPrice ?? 0).ToString("N0"))Đ
+                                            </p>
+                                            <a href="/Buildings/BuildingDetail/@b.BuildingId"
+                                               class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                <i class="fa fa-building me-2 text-primary"></i>
+                                                Xem chi tiết
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @foreach (var wardGroup in Model.TopWardBuildings
+                                .Select((g, i) => new { g.Key, Items = g.Value, Index = i + 1 }))
+                {
+                    <div id="tab-@wardGroup.Index" class="tab-pane fade show p-0">
+                        <div class="row g-4">
+                            @foreach (var b in wardGroup.Items)
+                            {
+                                <div class="col-md-6 col-lg-4 col-xl-3">
+                                    <div class="rounded position-relative fruite-item">
+                                        <div class="fruite-img">
+                                            <img src="@b.ThumbnailUrl"
+                                                 alt="@b.BuildingName" />
+                                        </div>
+                                        <div class="text-white bg-secondary px-3 py-1 rounded position-absolute"
+                                             style="top: 10px; left: 10px;">
+                                            @b.WardName
+                                        </div>
+                                        <div class="p-4 border border-secondary border-top-0 rounded-bottom">
+                                            <h4>@b.BuildingName</h4>
+                                            <p>@b.Address</p>
+                                            <div class="d-flex justify-content-between flex-lg-wrap">
+                                                <p class="text-dark fs-5 fw-bold mb-0">
+                                                    @((b.DisplayPrice ?? 0).ToString("N0"))Đ
+                                                </p>
+                                                <a href="/Buildings/BuildingDetail/@b.BuildingId"
+                                                   class="btn border border-secondary rounded-pill px-3 text-primary">
+                                                    <i class="fa fa-building me-2 text-primary"></i>
+                                                    Xem chi tiết
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vesitable Shop Start-->
+
+
+<style>
+    .fixed-item {
+        width: 280px; /* Chiều rộng cố định */
+        height: 450px; /* Chiều cao cố định */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+        .fixed-item .vesitable-img {
+            height: 180px; /* Chiều cao cố định cho ảnh */
+            overflow: hidden;
+        }
+
+            .fixed-item .vesitable-img img {
+                object-fit: cover;
+                height: 100%;
+                width: 100%;
+            }
+
+        .fixed-item .p-4 {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .fixed-item h4 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .fixed-item p {
+            font-size: 14px;
+            margin-bottom: 10px;
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+</style>
+
+<div class="container-fluid vesitable py-5">
+    <div class="container py-5">
+        <h1 class="mb-0">Nhà trọ đang hot</h1>
+        <div class="owl-carousel vegetable-carousel justify-content-center">
+
+            @* Chỉ hiển thị tối đa 8 item *@
+            @foreach (var b in Model.TopVipBuildings.Take(8))
+            {
+                <div class="border border-primary rounded position-relative vesitable-item fixed-item">
+
+                    <div class="vesitable-img">
+                        <img src="@b.ThumbnailUrl"
+                             class="img-fluid w-100 rounded-top"
+                             alt="@b.BuildingName" />
+                    </div>
+
+                    <div class="text-white bg-primary px-3 py-1 rounded position-absolute"
+                         style="top: 10px; right: 10px;">
+                        VIP
+                    </div>
+
+                    <div class="p-4 rounded-bottom d-flex flex-column"
+                         style="flex:1; overflow:hidden;">
+                        <h4>@b.BuildingName</h4>
+                        <p class="flex-grow-1">@b.Address</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="text-dark fs-5 fw-bold mb-0">
+                                @((b.DisplayPrice ?? 0).ToString("N0"))Đ
+                            </p>
+                            <a href="/Building/Details/@b.BuildingId"
+                               class="btn border border-secondary rounded-pill px-3 text-primary">
+                                <i class="fa fa-building me-2 text-primary"></i>Xem
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<!-- Vesitable Shop End -->
+<!-- Bestsaler Product Start -->
+<div class="container-fluid py-5 bg-light">
+    <div class="container py-5">
+        <h2 class="mb-4">Tòa nhà được đánh giá cao</h2>
+        <div class="row g-4">
+            @foreach (var b in Model.TopRatedBuildings)
+            {
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="border border-primary rounded p-3 h-100 d-flex flex-column">
+                        <img src="@b.ThumbnailUrl" alt="@b.BuildingName"
+                             class="img-fluid rounded mb-3" style="height:180px; object-fit:cover;" />
+
+                        <h5 class="mb-1">@b.BuildingName</h5>
+                        <p class="mb-1 text-muted">@b.Address</p>
+
+                        @{
+                            var fullStars = (int)Math.Floor(b.Rating);
+                            var hasHalfStar = b.Rating - fullStars >= 0.5;
+                            var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                        }
+                        <div class="mb-2 d-flex align-items-center">
+                            @for (int i = 0; i < fullStars; i++)
+                            {
+                                <i class="fas fa-star text-warning me-1"></i>
+                            }
+                            @if (hasHalfStar)
+                            {
+                                <i class="fas fa-star-half-alt text-warning me-1"></i>
+                            }
+                            @for (int i = 0; i < emptyStars; i++)
+                            {
+                                <i class="far fa-star text-warning me-1"></i>
+                            }
+                            <span class="ms-2 text-muted">(@b.RatingNumber)</span>
+                        </div>
+
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-danger fs-5">@((b.DisplayPrice ?? 0).ToString("N0")) Đ</span>
+                            <a href="/Building/Details/@b.BuildingId"
+                               class="btn border border-secondary rounded-pill px-3 text-primary">
+                                <i class="fa fa-building me-2 text-primary"></i>Xem
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<!-- About Section Simplified -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-4">CHO THUÊ PHÒNG TRỌ, NHÀ TRỌ</h1>
+            <div class="mx-auto" style="max-width: 800px;">
+                <p class="mb-4 fs-5">
+                    Khi có nhu cầu <strong class="text-primary">thuê phòng trọ</strong>,
+                    chắc hẳn bạn sẽ băn khoăn với hàng loạt câu hỏi như:
+                    <em>
+                        "Không biết bắt đầu từ đâu? Sợ bị mất cọc oan vì những phòng trọ 'ảo'?
+                        Tìm mãi nhưng không ra phòng ưng ý?..."
+                    </em>
+                </p>
+                <p class="mb-4 fs-5">
+                    Đừng quá lo lắng, vì <strong class="text-primary">HolaMy</strong> chính là giải pháp tối ưu
+                    dành cho những vấn đề đó. Nơi bạn có thể <strong>tìm phòng trọ</strong> mà không cần lặn lội
+                    khắp nơi, chỉ cần vài cú nhấp chuột là tìm thấy ngay một nơi ở tiềm năng.
+                </p>
+            </div>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+            <!-- Giới thiệu -->
+            <div class="col-md-4">
+                <div class="bg-light p-4 rounded h-100 text-center">
+                    <div class="icon-box bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; line-height: 60px;">
+                        <i class="fas fa-info fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Giới thiệu về HolaMy</h4>
+                    <p class="mb-0">Kênh thông tin phòng trọ số 1 Việt Nam với hơn 200.000 tin đăng và 3 triệu lượt truy cập mỗi tháng.</p>
+                </div>
+            </div>
+
+            <!-- Ưu điểm -->
+            <div class="col-md-4">
+                <div class="bg-light p-4 rounded h-100 text-center">
+                    <div class="icon-box bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; line-height: 60px;">
+                        <i class="fas fa-star fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Ưu điểm của HolaMy</h4>
+                    <p class="mb-0">Chuyên môn hóa, thông tin minh bạch, bộ lọc thông minh và hỗ trợ tận tình.</p>
+                </div>
+            </div>
+
+            <!-- Dịch vụ -->
+            <div class="col-md-4">
+                <div class="bg-light p-4 rounded h-100 text-center">
+                    <div class="icon-box bg-primary text-white rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; line-height: 60px;">
+                        <i class="fas fa-concierge-bell fa-2x"></i>
+                    </div>
+                    <h4 class="mb-3">Dịch vụ nổi bật</h4>
+                    <p class="mb-0">Đa dạng gói đăng tin, hỗ trợ quay video và tối ưu hóa SEO hàng đầu.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .icon-box {
+        transition: transform 0.3s;
+    }
+
+    .col-md-4:hover .icon-box {
+        transform: rotate(15deg) scale(1.1);
+    }
+</style>
+
+<!-- Fact Start -->
+<div class="container-fluid py-5">
+    <div class="container">
+        <div class="bg-light p-5 rounded">
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="counter bg-white rounded p-5">
+                        <i class="fa fa-users text-secondary"></i>
+                        <h4>Người dùng hài lòng</h4>
+                        <h1>1963+</h1>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="counter bg-white rounded p-5">
+                        <i class="fa fa-star text-secondary"></i>
+                        <h4>Chất lượng dịch vụ</h4>
+                        <h1>99%</h1>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="counter bg-white rounded p-5">
+                        <i class="fa fa-certificate text-secondary"></i>
+                        <h4>Tòa nhà đạt chuẩn</h4>
+                        <h1>33+</h1>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-6 col-xl-3">
+                    <div class="counter bg-white rounded p-5">
+                        <i class="fa fa-home text-secondary"></i>
+                        <h4>Phòng đang cho thuê</h4>
+                        <h1>789+</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="/Buildings/BuildingList" class="btn btn-primary btn-lg rounded-pill px-5 py-3">Bắt đầu tìm phòng ngay</a>
+    </div>
+</div>
+<!-- Fact End -->
+
+
+
+
+                
+    <script src="lib/owlcarousel/owl.carousel.min.js"></script>

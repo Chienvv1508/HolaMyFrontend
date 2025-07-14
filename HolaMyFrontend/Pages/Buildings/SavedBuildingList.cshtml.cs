@@ -83,10 +83,11 @@ namespace HolaMyFrontend.Pages.Buildings
         }
 
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> OnPostAsync(int buildingId, int? roomId)
+        public async Task<IActionResult> OnPostAsync(int buildingId, int roomId)
         {
             try
             {
+
                 var (client, errorResult) = _apiClientService.GetAuthorizedClient();
                 if (errorResult != null)
                 {
@@ -94,6 +95,12 @@ namespace HolaMyFrontend.Pages.Buildings
                     return RedirectToPage("/HomePage/Login");
                 }
 
+                // Kiểm tra hợp lệ đầu vào
+                if (buildingId <= 0 || roomId <= 0)
+                {
+                    TempData["ErrorMessage"] = "Dữ liệu không hợp lệ.";
+                    return RedirectToPage();
+                }
                 var request = new SavedBuildingRequestDTO
                 {
                     BuildingId = buildingId,
@@ -169,6 +176,14 @@ namespace HolaMyFrontend.Pages.Buildings
             }
 
             return RedirectToPage();
+        }
+        public string BuildQueryString(int page)
+        {
+            var query = new Dictionary<string, string>
+            {
+                ["page"] = page.ToString()
+            };
+            return $"?{string.Join("&", query.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"))}";
         }
     }
 }

@@ -23,18 +23,20 @@ namespace HolaMyFrontend.Pages.Accounts
         // Handler này được JavaScript gọi để TẢI DỮ LIỆU.
         public async Task<IActionResult> OnPostLoadProfileAsync([FromBody] TokenRequest request)
         {
-            if (string.IsNullOrEmpty(request?.Token)) return BadRequest("Token is required.");
+            if (string.IsNullOrEmpty(request?.Token))
+                return BadRequest("Token is required.");
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", request.Token);
 
             try
             {
-                var response = await client.GetAsync("http://localhost:8888/api/User/profile");
+                var response = await client.GetAsync("api/User/profile"); // <-- Đường dẫn tương đối
                 if (!response.IsSuccessStatusCode)
                 {
                     return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
                 }
+
                 var userProfileJson = await response.Content.ReadAsStringAsync();
                 return new ContentResult { Content = userProfileJson, ContentType = "application/json" };
             }
@@ -50,19 +52,19 @@ namespace HolaMyFrontend.Pages.Accounts
         {
             if (!Request.Headers.TryGetValue("Authorization", out var authHeader))
             {
-                // SỬA LỖI Ở ĐÂY
                 return new UnauthorizedObjectResult("Authorization header is missing.");
             }
-            
-            var client = _httpClientFactory.CreateClient();
+
+            var client = _httpClientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(authHeader.ToString());
-            
+
             using var multiPartContent = new MultipartFormDataContent();
-            
+
             foreach (var item in Request.Form)
             {
                 multiPartContent.Add(new StringContent(item.Value), item.Key);
             }
+
             if (Request.Form.Files.Any())
             {
                 var file = Request.Form.Files[0];
@@ -73,12 +75,12 @@ namespace HolaMyFrontend.Pages.Accounts
 
             try
             {
-                var response = await client.PutAsync("http://localhost:8888/api/User/updateProfile", multiPartContent);
+                var response = await client.PutAsync("api/User/updateProfile", multiPartContent); // <-- Đường dẫn tương đối
                 if (!response.IsSuccessStatusCode)
                 {
                     return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
                 }
-                // SỬA LỖI Ở ĐÂY
+
                 return new OkObjectResult("Cập nhật thành công!");
             }
             catch (HttpRequestException ex)
@@ -86,6 +88,7 @@ namespace HolaMyFrontend.Pages.Accounts
                 return StatusCode(503, $"Service Unavailable: {ex.Message}");
             }
         }
+
     }
 
     public class TokenRequest
