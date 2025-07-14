@@ -218,39 +218,239 @@
                                     }
                                 </div>
                             </div>
+                            <!-- Phần bình luận (đã được cải thiện giao diện) -->
                             <div class="tab-pane" id="nav-reviews" role="tabpanel" aria-labelledby="nav-reviews-tab">
-                                <div class="d-flex">
-                                    <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                    <div class="">
-                                        <p class="mb-2" style="font-size: 14px;">March 5, 2025</p>
-                                        <div class="d-flex justify-content-between">
-                                            <h5>Jason Smith</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                            </div>
+                                <div class="comment-section">
+                                    <!-- Thông báo -->
+                                    @if (TempData["CommentSuccessMessage"] != null)
+                                    {
+                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            @TempData["CommentSuccessMessage"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                         </div>
-                                        <p class="text-dark">Great room, very comfortable and clean!</p>
+                                    }
+                                    @if (TempData["CommentErrorMessage"] != null)
+                                    {
+                                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            @TempData["CommentErrorMessage"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    }
+
+                                    <!-- Form bình luận -->
+                                    <div class="card comment-form-card mb-4">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><i class="fas fa-edit me-2"></i>Viết bình luận</h5>
+                                            <form method="post" enctype="multipart/form-data" asp-page-handler="CreateComment" id="commentForm">
+                                                <input type="hidden" asp-for="NewComment.BuildingId" value="@Model.Building.BuildingId" />
+                                                <input type="hidden" asp-for="NewComment.UserId" value="@ViewData["UserId"]" />
+
+                                                <div class="form-group mb-3" id="contentInputContainer">
+                                                    <label asp-for="NewComment.Content" class="form-label">
+                                                        <i class="fas fa-comment-dots me-1"></i>Nội dung bình luận <span class="text-danger">*</span>
+                                                    </label>
+                                                    <textarea asp-for="NewComment.Content" class="form-control" rows="4" placeholder="Nhập văn bản (nếu có), sau đó thêm URL ảnh cách nhau bằng dấu cách (ví dụ: 'Nội dung http://example.com/image.jpg')" id="commentContent"></textarea>
+                                                    <span asp-validation-for="NewComment.Content" class="text-danger small"></span>
+                                                </div>
+
+                                                <div class="form-group mb-3">
+                                                    <label asp-for="NewComment.ContentType" class="form-label">
+                                                        <i class="fas fa-file-alt me-1"></i>Loại nội dung <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select asp-for="NewComment.ContentType" class="form-select" id="contentType" onchange="toggleCommentFields()">
+                                                        <option value="">Chọn loại nội dung</option>
+                                                        <option value="@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text">Chỉ văn bản</option>
+                                                        <option value="@HolaMyFrontend.Models.CommentDTOs.CommentContentType.image">Chỉ hình ảnh</option>
+                                                        <option value="@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text_image">Văn bản và hình ảnh</option>
+                                                    </select>
+                                                    <span asp-validation-for="NewComment.ContentType" class="text-danger small"></span>
+                                                </div>
+
+                                                <div class="form-group mb-3" id="fileInputContainer">
+                                                    <label asp-for="NewComment.File" class="form-label">
+                                                        <i class="fas fa-image me-1"></i>Tệp đính kèm (tùy chọn, tối đa 5MB)
+                                                    </label>
+                                                    <input type="file" asp-for="NewComment.File" class="form-control" accept="image/jpeg,image/png,image/gif" id="commentFile" />
+                                                    <div class="comment-preview mt-2 d-flex flex-wrap gap-2"></div>
+                                                    <span asp-validation-for="NewComment.File" class="text-danger small"></span>
+                                                </div>
+
+                                                <div class="form-group mb-4">
+                                                    <label asp-for="NewComment.Rating" class="form-label">
+                                                        <i class="fas fa-star me-1"></i>Điểm đánh giá (1-5)
+                                                    </label>
+                                                    <div class="rating-stars mb-2">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            <i class="far fa-star rating-star" data-value="@i"></i>
+                                                        }
+                                                    </div>
+                                                    <input asp-for="NewComment.Rating" class="form-control d-none" type="number" step="0.1" min="1" max="5" id="ratingValue" />
+                                                    <span asp-validation-for="NewComment.Rating" class="text-danger small"></span>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane me-2"></i>Gửi bình luận
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="d-flex">
-                                    <img src="img/avatar.jpg" class="img-fluid rounded-circle p-3" style="width: 100px; height: 100px;" alt="">
-                                    <div class="">
-                                        <p class="mb-2" style="font-size: 14px;">March 10, 2025</p>
-                                        <div class="d-flex justify-content-between">
-                                            <h5>Sam Peters</h5>
-                                            <div class="d-flex mb-3">
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star text-secondary"></i>
-                                                <i class="fa fa-star"></i>
-                                                <i class="fa fa-star"></i>
+
+                                    <!-- Danh sách bình luận -->
+                                    <div class="comments-list">
+                                        <h5 class="mb-4">
+                                            <i class="fas fa-comments me-2"></i>Bình luận hiện có
+                                            @if (Model.BuildingComments.Any())
+                                            {
+                                                <span class="badge bg-primary rounded-pill ms-2">@Model.BuildingComments.Count</span>
+                                            }
+                                        </h5>
+
+                                        @if (Model.BuildingComments.Any())
+                                        {
+                                            <div class="average-rating mb-4 p-3 bg-light rounded">
+                                                <h6 class="d-flex align-items-center mb-2">
+                                                    <i class="fas fa-chart-line me-2 text-primary"></i>Điểm đánh giá trung bình:
+                                                </h6>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="rating-stars me-3">
+                                                        @{
+                                                            var avgRating = Model.BuildingComments.Where(c => c.Rating.HasValue).Average(c => c.Rating.Value);
+                                                            var fullStars = (int)Math.Floor(avgRating);
+                                                            var hasHalfStar = avgRating % 1 >= 0.5;
+                                                        }
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= fullStars)
+                                                            {
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            }
+                                                            else if (i == fullStars + 1 && hasHalfStar)
+                                                            {
+                                                                <i class="fas fa-star-half-alt text-warning"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star text-warning"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <span class="fw-bold">@avgRating.ToString("0.0") / 5.0</span>
+                                                    <span class="text-muted ms-2">(@Model.BuildingComments.Count(c => c.Rating.HasValue) đánh giá)</span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <p class="text-dark">Good location but a bit small for my needs.</p>
+
+                                            @foreach (var comment in Model.BuildingComments)
+                                            {
+                                                <div class="card comment-card mb-3">
+                                                    <div class="card-body">
+                                                        <div class="d-flex">
+                                                            <!-- Avatar -->
+                                                            <div class="flex-shrink-0 me-3">
+                                                                @{
+                                                                    var avatarUrl = string.IsNullOrEmpty(comment.AvatarUrl) ? "/img/avatar.jpg" : comment.AvatarUrl;
+                                                                }
+                                                                <img src="@avatarUrl"
+                                                                     class="img-fluid rounded-circle avatar-img"
+                                                                     alt="Avatar của @(comment.UserName ?? "Ẩn danh")"
+                                                                     onerror="this.src='/img/default-avatar.jpg'; this.classList.add('avatar-fallback');">
+                                                            </div>
+
+                                                            <!-- Nội dung bình luận -->
+                                                            <div class="flex-grow-1">
+                                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                    <h6 class="mb-0 fw-bold">@(comment.UserName ?? "Ẩn danh")</h6>
+                                                                    <small class="text-muted">
+                                                                        <i class="far fa-clock me-1"></i>@comment.CreatedAt.ToString("g")
+                                                                    </small>
+                                                                </div>
+
+                                                                @if (comment.Rating.HasValue)
+                                                                {
+                                                                    <div class="mb-2">
+                                                                        <div class="rating-stars d-inline-block me-2">
+                                                                            @for (int i = 1; i <= 5; i++)
+                                                                            {
+                                                                                if (i <= Math.Floor(comment.Rating.Value))
+                                                                                {
+                                                                                    <i class="fas fa-star text-warning small"></i>
+                                                                                }
+                                                                                else if (i <= Math.Ceiling(comment.Rating.Value) && comment.Rating.Value % 1 > 0)
+                                                                                {
+                                                                                    <i class="fas fa-star-half-alt text-warning small"></i>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <i class="far fa-star text-warning small"></i>
+                                                                                }
+                                                                            }
+                                                                        </div>
+                                                                        <span class="text-muted small">@comment.Rating.Value.ToString("0.0") điểm</span>
+                                                                    </div>
+                                                                }
+
+                                                                <!-- Hiển thị nội dung/ảnh -->
+                                                                @if (comment.ContentType == HolaMyFrontend.Models.CommentDTOs.CommentContentType.image)
+                                                                {
+                                                                    @if (!string.IsNullOrEmpty(comment.Content) && (comment.Content.StartsWith("http") || comment.Content.StartsWith("https")))
+                                                                    {
+                                                                        <div class="comment-media mb-2">
+                                                                            <img src="@comment.Content"
+                                                                                 class="img-fluid rounded"
+                                                                                 style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                                                                                 alt="Ảnh bình luận"
+                                                                                 onerror="this.style.display='none';">
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                                else if (comment.ContentType == HolaMyFrontend.Models.CommentDTOs.CommentContentType.text_image)
+                                                                {
+                                                                    @if (!string.IsNullOrEmpty(comment.Content))
+                                                                    {
+                                                                        @if (System.Text.RegularExpressions.Regex.IsMatch(comment.Content, @"(http|https)://[^\s]+"))
+                                                                        {
+                                                                            var imageUrl = System.Text.RegularExpressions.Regex.Match(comment.Content, @"(http|https)://[^\s]+").Value;
+                                                                            var textContent = System.Text.RegularExpressions.Regex.Replace(comment.Content, @"(http|https)://[^\s]+", "").Trim();
+
+                                                                            @if (!string.IsNullOrEmpty(textContent))
+                                                                            {
+                                                                                <p class="comment-text mb-2">@textContent</p>
+                                                                            }
+                                                                            <div class="comment-media mb-2">
+                                                                                <img src="@imageUrl"
+                                                                                     class="img-fluid rounded"
+                                                                                     style="max-width: 100%; max-height: 300px; object-fit: contain;"
+                                                                                     alt="Ảnh bình luận"
+                                                                                     onerror="this.style.display='none';">
+                                                                            </div>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <p class="comment-text mb-2">@comment.Content</p>
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="comment-text mb-2">@(string.IsNullOrEmpty(comment.Content) ? "Không có nội dung" : comment.Content)</p>
+                                                                }
+
+                                                                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="text-center py-4">
+                                                <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                                            </div>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -281,7 +481,7 @@
                         </div>
 
                     </div>
-                    <form action="/submit-review" method="POST" id="reviewForm">
+                    @* <form action="/submit-review" method="POST" id="reviewForm">
                         <h4 class="mb-4 fw-bold">Leave a Review</h4>
                         <div class="mb-3">
                             <textarea class="form-control border rounded" name="comment" placeholder="Your Review *" rows="5" required></textarea>
@@ -300,7 +500,7 @@
                         <input type="hidden" name="buildingId" value="@Model.Building.BuildingId">
                         <input type="hidden" name="tenantId" value="2">
                         <button type="submit" class="btn btn-primary rounded">Submit</button>
-                    </form>
+                    </form> *@
                 </div>
             </div>
             <div class="col-lg-4 col-xl-3">
@@ -509,6 +709,96 @@
 </div>
 
 <style>
+    /* Comment Section Styles */
+    .comment-section {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .comment-form-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+    }
+
+        .comment-form-card .card-title {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+    .comment-card {
+        border: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s;
+        border-radius: 8px;
+    }
+
+        .comment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+    .comment-text {
+        white-space: pre-line;
+        line-height: 1.6;
+    }
+
+    .comment-media img {
+        transition: transform 0.3s;
+        cursor: zoom-in;
+    }
+
+        .comment-media img:hover {
+            transform: scale(1.02);
+        }
+
+    .rating-stars {
+        color: #ffc107;
+        font-size: 1.1rem;
+    }
+
+        .rating-stars .rating-star {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .rating-stars .rating-star:hover {
+                transform: scale(1.2);
+            }
+
+    .average-rating {
+        background-color: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .comment-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .avatar-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+
+    .avatar-fallback {
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-weight: bold;
+    }
+
+    .comment-preview img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
     .modal-content {
         border-radius: 10px;
     }
@@ -650,6 +940,20 @@
     #room-info p {
         transition: all 0.3s ease;
     }
+
+    .avatar-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border: 2px solid #ddd; /* Thêm viền để avatar nổi bật hơn */
+        border-radius: 50%;
+    }
+
+    .avatar-fallback {
+        border-color: #ccc; /* Màu viền khác khi dùng ảnh fallback */
+        opacity: 0.8; /* Giảm độ sáng để phân biệt */
+    }
+
 </style>
 
 <script>
@@ -821,6 +1125,130 @@
                 }
             });
         });
+        // Xử lý rating stars
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            document.getElementById('ratingValue').value = value;
+
+            // Cập nhật hiển thị sao
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'text-warning');
+                } else {
+                    s.classList.remove('fas', 'text-warning');
+                    s.classList.add('far');
+                }
+            });
+        });
+    });
+
+    // Xử lý hiển thị ảnh khi chọn file
+    document.getElementById('commentFile')?.addEventListener('change', function(e) {
+        const previewContainer = document.querySelector('.comment-preview');
+        previewContainer.innerHTML = '';
+
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                previewContainer.appendChild(img);
+            }
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Toggle các trường theo loại nội dung
+    function toggleCommentFields() {
+        const contentType = document.getElementById('contentType').value;
+        const contentInput = document.getElementById('contentInputContainer');
+        const fileInput = document.getElementById('fileInputContainer');
+
+        if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.image') {
+            contentInput.style.display = 'none';
+            fileInput.style.display = 'block';
+        } else if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text') {
+            contentInput.style.display = 'block';
+            fileInput.style.display = 'none';
+        } else {
+            contentInput.style.display = 'block';
+            fileInput.style.display = 'block';
+        }
+    }
+
+                document.addEventListener('DOMContentLoaded', function () {
+        const commentFileInput = document.getElementById('commentFile');
+        const commentPreview = document.querySelector('.comment-preview');
+        const contentTypeSelect = document.getElementById('contentType');
+        const commentContent = document.getElementById('commentContent');
+        const contentInputContainer = document.getElementById('contentInputContainer');
+        const fileInputContainer = document.getElementById('fileInputContainer');
+
+        function toggleCommentFields() {
+            const contentType = contentTypeSelect.value;
+            if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.image') {
+                commentContent.removeAttribute('required');
+                contentInputContainer.style.display = 'none';
+                fileInputContainer.style.display = 'block';
+                commentFileInput.setAttribute('required', 'required');
+            } else if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text') {
+                commentContent.setAttribute('required', 'required');
+                contentInputContainer.style.display = 'block';
+                fileInputContainer.style.display = 'none';
+                commentFileInput.removeAttribute('required');
+            } else if (contentType === '@HolaMyFrontend.Models.CommentDTOs.CommentContentType.text_image') {
+                commentContent.setAttribute('required', 'required');
+                contentInputContainer.style.display = 'block';
+                fileInputContainer.style.display = 'block';
+                commentFileInput.setAttribute('required', 'required');
+            } else {
+                contentInputContainer.style.display = 'block';
+                fileInputContainer.style.display = 'block';
+                commentContent.removeAttribute('required');
+                commentFileInput.removeAttribute('required');
+            }
+        }
+
+        if (contentTypeSelect) {
+            contentTypeSelect.addEventListener('change', toggleCommentFields);
+            toggleCommentFields(); // Gọi khi tải trang
+        }
+
+        if (commentFileInput) {
+            commentFileInput.addEventListener('change', function () {
+                commentPreview.innerHTML = '';
+                const file = this.files[0];
+                if (file) {
+                    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+                        showToast('error', 'Lỗi', 'Chỉ hỗ trợ định dạng JPEG, PNG, GIF.');
+                        this.value = '';
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('error', 'Lỗi', 'Ảnh không được vượt quá 5MB.');
+                        this.value = '';
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.maxWidth = '100px';
+                        img.style.maxHeight = '100px';
+                        img.style.margin = '5px';
+                        img.style.borderRadius = '5px';
+                        commentPreview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Đảm bảo các hàm toast và thumbnail đã được định nghĩa trước đó
+    });
         // Handle star rating
         const stars = document.querySelectorAll('.rating-stars i');
         const ratingInput = document.getElementById('rating-value');
@@ -841,6 +1269,24 @@
                 });
             });
         });
+            document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            document.getElementById('ratingValue').value = value;
+
+            // Update star display
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'text-warning');
+                } else {
+                    s.classList.remove('fas', 'text-warning');
+                    s.classList.add('far');
+                }
+            });
+        });
+    });
 
         // Handle file input for evidence images
         const evidenceFilesContainer = document.getElementById('evidenceFilesContainer');
