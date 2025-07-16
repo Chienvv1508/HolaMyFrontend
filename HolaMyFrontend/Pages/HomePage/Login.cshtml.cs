@@ -44,6 +44,14 @@ namespace HolaMyFrontend.Pages.HomePage
                     SameSite = SameSiteMode.Lax,
                     Expires = DateTime.UtcNow.AddDays(7)
                 });
+                
+                Response.Cookies.Append("userId",claims.FirstOrDefault(x => x.Type == "UserId").Value, new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = true,
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTime.UtcNow.AddDays(7)
+                });
                 return role switch
                 {
                     "Admin" => Redirect("/AdminPage"),
