@@ -99,7 +99,7 @@
                                         if (roomType != null)
                                         {
                                             <span class="badge bg-secondary text-white rounded-pill py-2 px-3 filter-tag" data-type="roomTypeIds" data-value="@roomType.RoomTypeId" data-checkbox-id="roomType_@roomType.RoomTypeId">
-                                                @roomType.RoomTypeName <i class="fa fa-times ms-2"></i>
+                                                @roomType.Name <i class="fa fa-times ms-2"></i>
                                             </span>
                                         }
                                     }
@@ -179,7 +179,7 @@
                                                 <input class="form-check-input" type="checkbox" name="roomTypeIds" value="@roomType.RoomTypeId" id="roomType_@roomType.RoomTypeId"
                                                 @(Model.RoomTypeIds != null && Model.RoomTypeIds.Contains(roomType.RoomTypeId) ? "checked" : "")
                                                         onchange="this.form.submit()" form="search-form">
-                                                <label class="form-check-label" for="roomType_@roomType.RoomTypeId">@roomType.RoomTypeName</label>
+                                                <label class="form-check-label" for="roomType_@roomType.RoomTypeId">@roomType.Name</label>
                                             </div>
                                             <span>(@roomType.RoomCount)</span>
                                         </div>
@@ -246,12 +246,16 @@
                                         @for (int i = 0; i < Model.AmenityListDTO.Count; i++)
                                         {
                                             var amenity = Model.AmenityListDTO[i];
-                                            <div class="form-check @(i >= 5 ? "amenity-hidden" : "")">
-                                                <input class="form-check-input" type="checkbox" name="amenityIds" value="@amenity.AmenityId" id="amenity_@amenity.AmenityId"
-                                                @(Model.AmenityIds != null && Model.AmenityIds.Contains(amenity.AmenityId) ? "checked" : "")
-                                                       onchange="this.form.submit()" form="search-form">
-                                                <label class="form-check-label" for="amenity_@amenity.AmenityId">@amenity.Name</label>
+
+                                            <div class="d-flex justify-content-between fruite-name">
+                                                <div class="form-check @(i >= 5 ? "amenity-hidden" : "")">
+                                                    <input class="form-check-input" type="checkbox" name="amenityIds" value="@amenity.AmenityId" id="amenity_@amenity.AmenityId"
+                                                    @(Model.AmenityIds != null && Model.AmenityIds.Contains(amenity.AmenityId) ? "checked" : "")
+                                                           onchange="this.form.submit()" form="search-form">
+                                                    <label class="form-check-label" for="amenity_@amenity.AmenityId">@amenity.Name</label>
+                                                </div>
                                             </div>
+                                            
                                         }
                                     </div>
                                     @if (Model.AmenityListDTO.Count > 5)
