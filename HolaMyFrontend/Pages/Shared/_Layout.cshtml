@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>@ViewData["Title"] - Fruitables</title>
+    <title>@ViewData["Title"]</title>
     <meta content="" name="keywords">
     <meta content="" name="description">
 
@@ -25,6 +25,7 @@
 
     <!-- Template Stylesheet -->
     <link href="~/css/style.css" rel="stylesheet" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/toast.css" />
     <style>
         .notification-dropdown {
             position: relative;
@@ -228,26 +229,8 @@
             </nav>
         </div>
     </div>
-    <!-- Navbar End -->
-    <!-- Modal Search Start -->
-    @* <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen">
-            <div class="modal-content rounded-0">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Search by keyword</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body d-flex align-items-center">
-                    <div class="input-group w-75 mx-auto d-flex">
-                        <input type="search" class="form-control p-3" placeholder="keywords" aria-describedby="search-icon-1">
-                        <span id="search-icon-1" class="input-group-text p-3"><i class="fa fa-search"></i></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> *@
-    <!-- Modal Search End -->
-    <!-- Main Content -->
+    <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>
+
     @RenderBody()
 
     <!-- Footer Start -->
@@ -400,8 +383,12 @@
             const cookieString = document.cookie;
             const cookies = cookieString.split(';');
             for (let cookie of cookies) {
-                const [key, value] = cookie.trim().split('=');
-                if (key === name) return decodeURIComponent(value);
+                const index = cookie.indexOf('=');
+                const key = cookie.substring(0, index).trim();
+                const value = cookie.substring(index + 1);
+                if (key === name) {
+                    return decodeURIComponent(value);
+                }
             }
             return null;
         }
@@ -736,6 +723,17 @@
             }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.1/purify.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        @if (TempData["ToastType"] != null && TempData["ToastTitle"] != null && TempData["ToastMessage"] != null)
+        {
+            <text>
+                    showToast('@TempData["ToastType"]', '@TempData["ToastTitle"]', '@TempData["ToastMessage"]');
+            </text>
+        }
+            });
+    </script>
 
 
     @await RenderSectionAsync("Scripts", required: false)
@@ -820,16 +818,15 @@
    fadeInUp {
         from
 
-    {
+    keyframes fadeInUp {
+    from {
         transform: translateY(20px);
         opacity: 0;
     }
-
     to {
         transform: translateY(0);
         opacity: 1;
     }
-
-    }
+}
 </style>
 </html>

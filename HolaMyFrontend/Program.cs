@@ -19,6 +19,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAntiforgery(options => options.HeaderName = "RequestVerificationToken");
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiUrl"));
 builder.Services.AddScoped<ApiClientService>();
+builder.Services.AddScoped<ToastService>();
 builder.Services.AddHttpClient();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

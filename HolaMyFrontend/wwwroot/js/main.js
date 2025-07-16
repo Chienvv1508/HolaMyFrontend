@@ -1,4 +1,4 @@
-(function ($) {
+﻿(function ($) {
     "use strict";
 
     // Spinner
@@ -146,6 +146,33 @@
         }
         button.parent().parent().find('input').val(newVal);
     });
+    // Toast Notification
+    window.showToast = function (type, title, message) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `custom-toast ${type === 'error' ? 'error' : ''}`;
+        toast.innerHTML = `
+            <span class="toast-icon"></span>
+            <div>
+                <span class="toast-title">${title}</span>
+                <p class="toast-message">${message}</p>
+            </div>
+            <button type="button" class="toast-close" aria-label="Đóng thông báo">×</button>
+        `;
+        toast.querySelector('.toast-close').addEventListener('click', () => {
+            toast.style.display = 'none';
+            toast.remove();
+        });
+        toastContainer.appendChild(toast);
+        toast.style.display = 'block';
 
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => {
+                toast.style.display = 'none';
+                toast.remove();
+            }, 500);
+        }, 4500);
+    };
 })(jQuery);
 
