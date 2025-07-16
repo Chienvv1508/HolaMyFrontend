@@ -1,0 +1,349 @@
+﻿@page "{phoneNumber?}"
+@model HolaMyFrontend.Pages.Reports.CreateModel
+@{
+    ViewData["Title"] = "Báo xấu chủ trọ";
+}
+
+<!-- Single Page Header Start -->
+<div class="container-fluid page-header py-5">
+    <h1 class="text-center text-white display-6">Báo cáo chủ trọ</h1>
+    <ol class="breadcrumb justify-content-center mb-0">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active text-white">Báo cáo</li>
+    </ol>
+</div>
+<!-- Single Page Header End -->
+<!-- Report Form Start -->
+<div class="container-fluid py-5">
+    <div class="container py-5">
+        <form id="reportForm" method="post" asp-page-handler="ReportLandlord" asp-route-userId="@Model.UserId" enctype="multipart/form-data">
+            <input type="hidden" name="userId" value="@Model.UserId" aria-hidden="true">
+            <input type="hidden" name="buildingId" value="@Model.BuildingId" aria-hidden="true">
+
+            <div class="row g-5">
+                <div class="col-md-12 col-lg-6 col-xl-7">
+                    @if (Model.Provider != null)
+                    {
+                        <div class="form-item">
+                            <h5 class="fw-bold my-3">Thông tin chủ trọ bị báo cáo</h5>
+                            <div class="border rounded p-3 bg-light">
+                                <p class="mb-2"><strong>Tên:</strong> @Model.Provider.Name</p>
+                                <p class="mb-0"><strong>Số điện thoại:</strong> @Model.Provider.PhoneNumber</p>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.Provider == null)
+                    {
+                        <div class="form-item">
+                            <label for="providerPhone" class="form-label my-3">Số điện thoại chủ trọ<sup>*</sup></label>
+                            <input type="text" class="form-control p-3" id="providerPhone" name="providerPhone" value="@Model.ProviderPhone" placeholder="Nhập số điện thoại chủ trọ" required aria-required="true">
+
+                            <div class="invalid-feedback">Vui lòng nhập số điện thoại hợp lệ.</div>
+                            <div id="providerName" class="mt-2"></div>
+                        </div>
+                    }
+
+                    <div class="form-item">
+                        <label for="reason" class="form-label my-3">Lý do báo xấu<sup>*</sup></label>
+                        <select class="form-select p-3" id="reason" name="reason" required aria-required="true">
+                            <option value="" disabled selected>Chọn lý do</option>
+                            @foreach (var reason in Model.ReportReasons)
+                            {
+                                if (Model.Reason == reason)
+                                {
+                                    <option value="@reason" selected>@reason</option>
+
+                                }
+                                else
+                                {
+                                    <option value="@reason">@reason</option>
+
+                                }
+                            }
+                        </select>
+
+                        <div class="invalid-feedback">Vui lòng chọn lý do báo xấu.</div>
+                    </div>
+
+                    <div class="form-item">
+                        <label for="description" class="form-label my-3">Mô tả chi tiết</label>
+                        <textarea class="form-control p-3" id="description" name="description" rows="11" maxlength="1000">@Model.Description</textarea>
+
+                        <small id="descriptionHelp" class="form-text text-muted">Tối đa 1000 ký tự.</small>
+                        <div class="invalid-feedback">Mô tả không được vượt quá 1000 ký tự.</div>
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label my-3">Ảnh bằng chứng (tùy chọn, tối đa 10 ảnh, 5MB mỗi ảnh)</label>
+                        <div id="evidenceFilesContainer">
+                            <div class="input-group mb-2">
+                                <input type="file" class="form-control p-3" name="evidenceFiles" accept="image/jpeg,image/png,image/gif" multiple aria-describedby="fileHelp">
+                                <span class="input-group-text p-3"><i class="fa fa-upload"></i></span>
+                                <div class="invalid-feedback">Chỉ hỗ trợ JPEG, PNG, GIF; tối đa 10 ảnh, 5MB mỗi ảnh.</div>
+                            </div>
+                            <div class="evidence-preview"></div>
+                        </div>
+                        <small id="fileHelp" class="form-text text-muted">Chọn các file ảnh để làm bằng chứng.</small>
+                    </div>
+
+                    <div class="form-check my-3">
+                        <input type="checkbox" class="form-check-input" id="isAnonymous" name="isAnonymous" @(Model.IsAnonymous ? "checked" : "")>
+
+                        <label class="form-check-label" for="isAnonymous">Ẩn danh</label>
+                    </div>
+                </div>
+
+                <div class="col-md-12 col-lg-6 col-xl-5">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Thông tin báo cáo</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Lý do</th>
+                                    <td class="py-3"><span id="reasonPreview">Chưa chọn</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Số ảnh bằng chứng</th>
+                                    <td class="py-3"><span id="fileCount">0</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Ẩn danh</th>
+                                    <td class="py-3"><span id="anonymousPreview">Không</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row g-4 text-center align-items-center justify-content-center pt-4">
+                        <button type="submit" class="btn border-secondary py-3 px-4 text-uppercase w-100 text-primary mt-3" id="submitReportBtn" disabled>Gửi báo cáo</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Report Form End -->
+
+<style>
+    .border {
+        border-radius: 10px;
+    }
+
+    .form-item .form-control:invalid,
+    .form-item .form-select:invalid {
+        border-color: #dc3545;
+    }
+
+    .evidence-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .evidence-item {
+        position: relative;
+        display: inline-block;
+    }
+
+        .evidence-item img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+        }
+
+        .evidence-item button {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 12px;
+            line-height: 1;
+        }
+
+    #providerName p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const reportForm = document.getElementById('reportForm');
+        const reasonSelect = document.getElementById('reason');
+        const descriptionTextarea = document.getElementById('description');
+        const fileInput = document.querySelector('input[name="evidenceFiles"]');
+        const submitButton = document.getElementById('submitReportBtn');
+        const evidencePreview = document.querySelector('.evidence-preview');
+        const providerPhoneInput = document.getElementById('providerPhone');
+        const reasonPreview = document.getElementById('reasonPreview');
+        const fileCount = document.getElementById('fileCount');
+        const anonymousPreview = document.getElementById('anonymousPreview');
+        const isAnonymousCheckbox = document.getElementById('isAnonymous');
+        let selectedFiles = [];
+        let providerId = null;
+
+        function validateForm() {
+            const isReasonValid = reasonSelect.value !== '';
+            const isDescriptionValid = descriptionTextarea.value.trim() !== '' && descriptionTextarea.value.length <= 1000;
+            const isFileValid = selectedFiles.length <= 10 && !fileInput.classList.contains('is-invalid');
+            const isProviderValid = providerPhoneInput ? !!providerId : true;
+
+            reasonSelect.classList.toggle('is-invalid', !isReasonValid);
+            descriptionTextarea.classList.toggle('is-invalid', !isDescriptionValid);
+            if (providerPhoneInput) {
+                providerPhoneInput.classList.toggle('is-invalid', !isProviderValid);
+            }
+            submitButton.disabled = !isReasonValid || !isDescriptionValid || !isFileValid || !isProviderValid;
+            submitButton.classList.toggle('btn-primary', isReasonValid && isDescriptionValid && isFileValid && isProviderValid);
+            submitButton.classList.toggle('btn-secondary', !(isReasonValid && isDescriptionValid && isFileValid && isProviderValid));
+
+            // Update preview
+            reasonPreview.textContent = reasonSelect.value || 'Chưa chọn';
+            fileCount.textContent = selectedFiles.length;
+            anonymousPreview.textContent = isAnonymousCheckbox.checked ? 'Có' : 'Không';
+        }
+
+        function updateFileInput() {
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            fileInput.files = dataTransfer.files;
+            validateForm();
+        }
+
+        fileInput.addEventListener('change', function () {
+            evidencePreview.innerHTML = '';
+            const newFiles = Array.from(this.files);
+            const existingFileNames = new Set(selectedFiles.map(file => file.name));
+            const uniqueFiles = newFiles.filter(file => !existingFileNames.has(file.name));
+
+            selectedFiles = [...selectedFiles, ...uniqueFiles].slice(0, 10);
+
+            if (newFiles.length > 10 || selectedFiles.length > 10) {
+                showToast('error', 'Lỗi', 'Chỉ được chọn tối đa 10 ảnh.');
+                fileInput.classList.add('is-invalid');
+                updateFileInput();
+                return;
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            for (const file of uniqueFiles) {
+                if (!allowedTypes.includes(file.type)) {
+                    showToast('error', 'Lỗi', `File ${file.name}: Chỉ hỗ trợ JPEG, PNG, GIF.`);
+                    fileInput.classList.add('is-invalid');
+                    updateFileInput();
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('error', 'Lỗi', `File ${file.name}: Ảnh không được vượt quá 5MB.`);
+                    fileInput.classList.add('is-invalid');
+                    updateFileInput();
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const container = document.createElement('div');
+                    container.className = 'evidence-item d-inline-block position-relative me-2 mb-2';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerText = '×';
+                    removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
+                    removeBtn.setAttribute('aria-label', `Xóa ảnh ${file.name}`);
+                    removeBtn.onclick = () => {
+                        selectedFiles = selectedFiles.filter(f => f !== file);
+                        updateFileInput();
+                        container.remove();
+                    };
+                    container.appendChild(img);
+                    container.appendChild(removeBtn);
+                    evidencePreview.appendChild(container);
+                };
+                reader.readAsDataURL(file);
+            }
+            fileInput.classList.remove('is-invalid');
+            updateFileInput();
+        });
+
+        if (providerPhoneInput) {
+            providerPhoneInput.addEventListener('input', async function () {
+                const phone = this.value.trim();
+                const providerNameDiv = document.getElementById('providerName');
+                providerNameDiv.innerHTML = '';
+
+                if (phone.length >= 10) {
+                    try {
+                        const response = await fetch(`http://localhost:8888/api/User/get-by-phone?phone=${encodeURIComponent(phone)}`, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
+                            }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.data) {
+                                providerNameDiv.innerHTML = `<p class="text-success">Chủ trọ: ${data.data.name}</p>`;
+                                providerId = data.data.id;
+                                providerPhoneInput.classList.remove('is-invalid');
+                                validateForm();
+                            } else {
+                                providerNameDiv.innerHTML = `<p class="text-danger">Không tìm thấy chủ trọ với số điện thoại này.</p>`;
+                                providerId = null;
+                                providerPhoneInput.classList.add('is-invalid');
+                                validateForm();
+                            }
+                        } else {
+                            showToast('error', 'Lỗi', 'Không thể tìm kiếm chủ trọ. Vui lòng thử lại.');
+                            providerId = null;
+                            providerPhoneInput.classList.add('is-invalid');
+                            validateForm();
+                        }
+                    } catch (error) {
+                        showToast('error', 'Lỗi', 'Lỗi khi tìm kiếm chủ trọ.');
+                        providerId = null;
+                        providerPhoneInput.classList.add('is-invalid');
+                        validateForm();
+                    }
+                } else {
+                    providerId = null;
+                    providerPhoneInput.classList.add('is-invalid');
+                    validateForm();
+                }
+            });
+        }
+
+        reasonSelect.addEventListener('change', validateForm);
+        descriptionTextarea.addEventListener('input', validateForm);
+        isAnonymousCheckbox.addEventListener('change', validateForm);
+
+        reportForm.addEventListener('submit', function (e) {
+            if (!reasonSelect.value) {
+                e.preventDefault();
+                showToast('error', 'Lỗi', 'Vui lòng chọn lý do báo xấu.');
+                return;
+            }
+            if (providerPhoneInput && !providerId) {
+                e.preventDefault();
+                showToast('error', 'Lỗi', 'Vui lòng nhập số điện thoại chủ trọ hợp lệ.');
+                return;
+            }
+            if (providerId) {
+                const providerIdInput = document.createElement('input');
+                providerIdInput.type = 'hidden';
+                providerIdInput.name = 'reportedOwnerId';
+                providerIdInput.value = providerId;
+                reportForm.appendChild(providerIdInput);
+            }
+            submitButton.disabled = true;
+            submitButton.innerText = 'Đang gửi...';
+        });
+
+        validateForm();
+    });
+</script>
