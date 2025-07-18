@@ -24,6 +24,7 @@
                 <div class="col-md-12 col-lg-6 col-xl-7">
                     @if (Model.Provider != null)
                     {
+                        <input type="hidden" name="reportedOwnerId" value="@Model.Provider.Id" aria-hidden="true">
                         <div class="form-item">
                             <h5 class="fw-bold my-3">Thông tin chủ trọ bị báo cáo</h5>
                             <div class="border rounded p-3 bg-light">
@@ -74,16 +75,16 @@
                     </div>
 
                     <div class="form-item">
-                        <label class="form-label my-3">Ảnh bằng chứng (tùy chọn, tối đa 10 ảnh, 5MB mỗi ảnh)</label>
+                        <label for="evidenceFiles" class="form-label my-3">Ảnh bằng chứng (bắt buộc, tối đa 10 ảnh, 5MB mỗi ảnh)<sup>*</sup></label>
                         <div id="evidenceFilesContainer">
                             <div class="input-group mb-2">
-                                <input type="file" class="form-control p-3" name="evidenceFiles" accept="image/jpeg,image/png,image/gif" multiple aria-describedby="fileHelp">
+                                <input type="file" class="form-control p-3" id="evidenceFiles" name="evidenceFiles" accept="image/jpeg,image/png,image/gif" multiple required aria-required="true" aria-describedby="fileHelp">
                                 <span class="input-group-text p-3"><i class="fa fa-upload"></i></span>
-                                <div class="invalid-feedback">Chỉ hỗ trợ JPEG, PNG, GIF; tối đa 10 ảnh, 5MB mỗi ảnh.</div>
+                                <div class="invalid-feedback">Vui lòng tải lên ít nhất một ảnh bằng chứng (JPEG, PNG, GIF).</div>
                             </div>
                             <div class="evidence-preview"></div>
                         </div>
-                        <small id="fileHelp" class="form-text text-muted">Chọn các file ảnh để làm bằng chứng.</small>
+                        <small id="fileHelp" class="form-text text-muted">Tải lên các file ảnh để làm bằng chứng.</small>
                     </div>
 
                     <div class="form-check my-3">
@@ -192,11 +193,12 @@
         function validateForm() {
             const isReasonValid = reasonSelect.value !== '';
             const isDescriptionValid = descriptionTextarea.value.trim() !== '' && descriptionTextarea.value.length <= 1000;
-            const isFileValid = selectedFiles.length <= 10 && !fileInput.classList.contains('is-invalid');
+            const isFileValid = selectedFiles.length > 0 && selectedFiles.length <= 10 && !fileInput.classList.contains('is-invalid');
             const isProviderValid = providerPhoneInput ? !!providerId : true;
 
             reasonSelect.classList.toggle('is-invalid', !isReasonValid);
             descriptionTextarea.classList.toggle('is-invalid', !isDescriptionValid);
+            fileInput.classList.toggle('is-invalid', !isFileValid);
             if (providerPhoneInput) {
                 providerPhoneInput.classList.toggle('is-invalid', !isProviderValid);
             }
