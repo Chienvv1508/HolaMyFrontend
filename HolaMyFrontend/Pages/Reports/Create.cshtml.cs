@@ -104,6 +104,7 @@ namespace HolaMyFrontend.Pages.Reports
             try
             {
                 var (client, errorResult) = _apiClientService.GetAuthorizedClient();
+
                 if (errorResult != null)
                 {
                     _toastService.ShowError("Lỗi", "Vui lòng đăng nhập lại.");
@@ -125,6 +126,7 @@ namespace HolaMyFrontend.Pages.Reports
                         var phoneApiResponse = await phoneResponse.Content.ReadFromJsonAsync<ResponseDTO<ProviderDTO>>();
                         if (phoneApiResponse?.Data != null)
                         {
+                            Provider = phoneApiResponse.Data;
                             reportedOwnerId = phoneApiResponse.Data.Id.ToString();
                         }
                         else
@@ -145,7 +147,11 @@ namespace HolaMyFrontend.Pages.Reports
                     _toastService.ShowError("Lỗi", "Vui lòng cung cấp thông tin chủ trọ.");
                     return Page();
                 }
-
+                if (evidenceFiles.Count == 0)
+                {
+                    _toastService.ShowError("Lỗi", "Vui lòng tải lên ít nhất một ảnh bằng chứng.");
+                    return Page();
+                }
                 if (evidenceFiles.Count > 10)
                 {
                     _toastService.ShowError("Lỗi", "Chỉ được gửi tối đa 10 ảnh.");
@@ -195,7 +201,7 @@ namespace HolaMyFrontend.Pages.Reports
                 if (response.IsSuccessStatusCode)
                 {
                     _toastService.ShowSuccess("Thành công", "Báo cáo đã được gửi thành công.");
-                    return RedirectToPage("/Buildings/BuildingDetail", new { id = buildingId });
+                    return RedirectToPage("/Reports/CustomerReports");
                 }
                 else
                 {
@@ -211,5 +217,6 @@ namespace HolaMyFrontend.Pages.Reports
                 return Page();
             }
         }
+
     }
 }
