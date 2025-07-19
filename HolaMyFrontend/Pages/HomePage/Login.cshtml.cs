@@ -27,15 +27,22 @@ namespace HolaMyFrontend.Pages.HomePage
         
         public async  Task<IActionResult> OnGet(string token = null)
         {
-            if (!string.IsNullOrEmpty(token))
+            if (!string.IsNullOrEmpty(token) || Request.Cookies["jwt"] != null)
             {
+                if (string.IsNullOrEmpty(token))
+                    token = Request.Cookies["jwt"];
                 ViewData["Token"] = token;
                 var handler = new JwtSecurityTokenHandler();
                 var jwt = handler.ReadJwtToken(token);
                 var claims = jwt.Claims.ToList();
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = true, 
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                };
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,authProperties);
                 var role = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role || c.Type == "role")?.Value;
                 Response.Cookies.Append("jwt", token, new CookieOptions
                 {
@@ -63,6 +70,7 @@ namespace HolaMyFrontend.Pages.HomePage
 
 
             }
+
             return Page();
         }
         public IActionResult OnPostGoogle()

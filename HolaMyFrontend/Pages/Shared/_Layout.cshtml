@@ -353,7 +353,7 @@
                 }
             }
             
-            updateAuthUI();
+     
 
             const notificationToggle = document.getElementById('notification-toggle');
             const notificationMenu = document.getElementById('notification-menu');
@@ -407,11 +407,14 @@
         }
 
         let socket;
+        let count = 1;
         async function connect() {
+            console.log(`connect${count}`);
+            count++;
             const userId = getCookie("userId");
             const token = getCookie("jwt");
             socket = new WebSocket(`ws://localhost:8888/ws?userId=${userId}`);
-
+           
             socket.onopen = () => console.log("WebSocket opened for " + userId);
             socket.onmessage = async (e) => {
                 const newNotification = JSON.parse(e.data);
@@ -633,108 +636,7 @@
             window.location.href = '/HomePage/Logout';
         }
 
-            function toggleChat() {
-            const chatWindow = document.getElementById('chat-window');
-            const isOpen = !chatWindow.classList.contains('d-none');
-            chatWindow.classList.toggle('d-none', isOpen);
-
-            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
-
-                if (!isOpen) {
-            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
-            if (chatHistory.length === 0) {
-                const welcomeMessage = "Xin chào! Mình là HolaBot 👋\nBạn cần tìm phòng ở đâu, giá bao nhiêu? Hỏi mình nhé!";
-                saveMessageToSession("HolaBot", welcomeMessage, false);
-            } else {
-                loadMessagesFromSession();
-            }
-        }
-
-            loadMessagesFromSession();
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
-            if (!message) return;
-
-            appendMessage('Bạn', message, true);
-            saveMessageToSession('Bạn', message, false);
-            input.value = '';
-
-            try {
-                const response = await fetch('http://localhost:8888/api/Chatbot/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': '*/*'
-                    },
-                    body: JSON.stringify({ message: message })
-                });
-
-                if (!response.ok) {
-                    const fallback = 'Xin lỗi, hiện tại mình không thể trả lời. Vui lòng thử lại sau.';
-                    appendMessage('HolaBot', fallback, false);
-                    saveMessageToSession('HolaBot', fallback, false);
-                    return;
-                }
-
-                const data = await response.json();
-                const botMessage = convertMarkdownToHTML(data.response);
-                appendMessage('HolaBot', botMessage, false, true);
-                saveMessageToSession('HolaBot', botMessage, true);
-
-            } catch (error) {
-                console.error('Chatbot error:', error);
-                const errMsg = 'Đã xảy ra lỗi. Bạn vui lòng thử lại sau nhé!';
-                appendMessage('HolaBot', errMsg, false);
-                saveMessageToSession('HolaBot', errMsg, false);
-            }
-        }
-
-        function appendMessage(sender, text, isUser, isHtml = false) {
-            const chat = document.getElementById('chat-messages');
-            const msg = document.createElement('div');
-            msg.className = `mb-2 ${isUser ? 'text-end' : 'text-start'}`;
-            msg.innerHTML = `<div class="d-inline-block px-3 py-2 rounded ${isUser ? 'bg-primary text-white' : 'bg-light text-dark'}" style="max-width: 90%; white-space: pre-wrap;">${isHtml ? text : escapeHtml(text)}</div>`;
-            chat.appendChild(msg);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/[&<>"']/g, function (match) {
-                return {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                }[match];
-            });
-        }
-
-        function convertMarkdownToHTML(markdown) {
-            return markdown
-                .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
-                .replace(/\((https?:\/\/[^\s()]+\.(jpg|jpeg|png|gif|webp)(\?[^()\s]*)?)\)/gi,
-                         '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-                .replace(/\n/g, '<br>');
-        }
-
-        function saveMessageToSession(sender, message, isHtml = false) {
-            let chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
-            chatHistory.push({ sender, message, isHtml });
-            sessionStorage.setItem("chatHistory", JSON.stringify(chatHistory));
-        }
-
-        function loadMessagesFromSession() {
-            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
-            for (let msg of chatHistory) {
-                appendMessage(msg.sender, msg.message, msg.sender === 'Bạn', msg.isHtml);
-            }
-        }
+          
     </script>
 
 
