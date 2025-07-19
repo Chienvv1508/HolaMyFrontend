@@ -66,7 +66,7 @@
             display: none;
         }
 
-
+        
 
         .notification-list {
             max-height: 250px;
@@ -156,9 +156,9 @@
                     <small class="me-3"><i class="fas fa-envelope me-2 text-secondary"></i><a href="#" class="text-white">Group 1</a></small>
                 </div>
                 @* <div class="top-link pe-2">
-                <a href="#" class="text-white"><small class="text-white mx-2">Privacy Policy</small>/</a>
-                <a href="#" class="text-white"><small class="text-white mx-2">Terms of Use</small>/</a>
-                <a href="#" class="text-white"><small class="text-white ms-2">Sales and Refunds</small></a>
+                    <a href="#" class="text-white"><small class="text-white mx-2">Privacy Policy</small>/</a>
+                    <a href="#" class="text-white"><small class="text-white mx-2">Terms of Use</small>/</a>
+                    <a href="#" class="text-white"><small class="text-white ms-2">Sales and Refunds</small></a>
                 </div> *@
             </div>
         </div>
@@ -175,21 +175,21 @@
                         <a href="/Buildings/BuildingList" class="nav-item nav-link @(Context.Request.Path == "/Buildings/BuildingList" ? "active" : "")">Nhà trọ</a>
                         <a href="/ShopDetail" class="nav-item nav-link ">Giới thiệu</a>
                         @* <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
-                        <div class="dropdown-menu m-0 bg-secondary rounded-0">
-                        <a href="/Cart" class="dropdown-item">Cart</a>
-                        <a href="/Checkout" class="dropdown-item">Checkout</a>
-                        <a href="/Testimonial" class="dropdown-item">Testimonial</a>
-                        <a href="/Error" class="dropdown-item">404 Page</a>
-                        </div>
+                            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
+                            <div class="dropdown-menu m-0 bg-secondary rounded-0">
+                                <a href="/Cart" class="dropdown-item">Cart</a>
+                                <a href="/Checkout" class="dropdown-item">Checkout</a>
+                                <a href="/Testimonial" class="dropdown-item">Testimonial</a>
+                                <a href="/Error" class="dropdown-item">404 Page</a>
+                            </div>
                         </div>
                         <a href="/Contact" class="nav-item nav-link">Contact</a> *@
                     </div>
                     <div class="d-flex m-3 me-0">
                         @* <button class="btn-search btn border border-secondary btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-primary"></i></button>
                         <a href="/Cart" class="position-relative me-4 my-auto">
-                        <i class="fa fa-shopping-bag fa-2x"></i>
-                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">@ViewData["CartCount"]</span>
+                            <i class="fa fa-shopping-bag fa-2x"></i>
+                            <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">@ViewData["CartCount"]</span>
                         </a>
                         *@
                         <div class="dropdown me-4 my-auto" id="notification-container">
@@ -298,7 +298,7 @@
         </div>
     </div>
     <!-- Copyright End -->
-
+    
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -329,13 +329,13 @@
 
             // Mở chat tự động khi lần đầu vào Homepage + load lại tin nhắn cũ
             if (window.location.pathname === "/Homepage") {
-
+                
                 if (!localStorage.getItem('chatOpened')) {
                     document.getElementById('chat-window').classList.remove('d-none');
                     localStorage.setItem('chatOpened', 'true');
                 }
             }
-
+            
             updateAuthUI();
 
             const notificationToggle = document.getElementById('notification-toggle');
@@ -355,9 +355,11 @@
 
     <script>
 
-        async function fetchUserProfile(token) {
-            // const token = localStorage.getItem('jwtToken');
-            if (!token) return null;
+                async function fetchUserProfile(token) {
+            if (!token) {
+                console.error('Token is not provided to fetchUserProfile.');
+                return null;
+            }
 
             try {
                 const response = await fetch('http://localhost:8888/api/User/profile', {
@@ -369,9 +371,20 @@
                 });
 
                 if (response.ok) {
-                    return await response.json();
+                    // Đọc toàn bộ phản hồi từ API (có dạng {statusCode, message, data})
+                    const apiResponse = await response.json();
+
+                    // Quan trọng: Chỉ trả về phần "data" bên trong phản hồi.
+                    // Thêm kiểm tra để đảm bảo apiResponse và apiResponse.data tồn tại.
+                    if (apiResponse && apiResponse.data) {
+                        return apiResponse.data;
+                    } else {
+                        console.error('API response is OK, but data property is missing.', apiResponse);
+                        return null;
+                    }
                 } else {
-                    console.error('Failed to fetch user profile:', await response.text());
+                    // Nếu API trả về lỗi (401, 404, 500...), ghi lại lỗi và trả về null.
+                    console.error('Failed to fetch user profile. Status:', response.status, await response.text());
                     return null;
                 }
             } catch (error) {
@@ -414,12 +427,12 @@
 
             notificationItem.innerHTML = `
 
-                                                <div class="notification-content">
-                                                    <strong>${notification.Title}</strong><br>
-                                                    ${notification.Message}
+                                        <div class="notification-content">
+                                            <strong>${notification.Title}</strong><br>
+                                            ${notification.Message}
 
-                                                </div>
-                                            `;
+                                        </div>
+                                    `;
             notificationItem.addEventListener('click', async () => {
                 if (!notification.isRead) {
                     await markNotificationAsRead(token, notification.id);
@@ -465,7 +478,7 @@
                     userName.textContent = fullName;
                     if (user.avatar) {
                         userAvatar.innerHTML = `
-                            <img src="${user.avatar}" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`;
+                    <img src="${user.avatar}" alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">`;
                     } else {
                         const initial = user.firstName.charAt(0).toUpperCase();
                         userAvatar.textContent = initial;
@@ -589,12 +602,12 @@
 
                 notificationItem.innerHTML = `
 
-                                                <div class="notification-content">
-                                                    <strong>${notification.title}</strong><br>
-                                                    ${notification.message}
+                                        <div class="notification-content">
+                                            <strong>${notification.title}</strong><br>
+                                            ${notification.message}
 
-                                                </div>
-                                            `;
+                                        </div>
+                                    `;
                 notificationItem.addEventListener('click', async () => {
                     if (!notification.isRead) {
                         await markNotificationAsRead(token, notification.id);
@@ -621,22 +634,22 @@
             window.location.href = '/HomePage/Logout';
         }
 
-        function toggleChat() {
+            function toggleChat() {
             const chatWindow = document.getElementById('chat-window');
             const isOpen = !chatWindow.classList.contains('d-none');
             chatWindow.classList.toggle('d-none', isOpen);
 
             const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
 
-            if (!isOpen) {
-                const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
-                if (chatHistory.length === 0) {
-                    const welcomeMessage = "Xin chào! Mình là HolaBot 👋\nBạn cần tìm phòng ở đâu, giá bao nhiêu? Hỏi mình nhé!";
-                    saveMessageToSession("HolaBot", welcomeMessage, false);
-                } else {
-                    loadMessagesFromSession();
-                }
+                if (!isOpen) {
+            const chatHistory = JSON.parse(sessionStorage.getItem("chatHistory")) || [];
+            if (chatHistory.length === 0) {
+                const welcomeMessage = "Xin chào! Mình là HolaBot 👋\nBạn cần tìm phòng ở đâu, giá bao nhiêu? Hỏi mình nhé!";
+                saveMessageToSession("HolaBot", welcomeMessage, false);
+            } else {
+                loadMessagesFromSession();
             }
+        }
 
             loadMessagesFromSession();
         }
@@ -705,7 +718,7 @@
             return markdown
                 .replace(/!\[.*?\]\((.*?)\)/g, '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
                 .replace(/\((https?:\/\/[^\s()]+\.(jpg|jpeg|png|gif|webp)(\?[^()\s]*)?)\)/gi,
-                    '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
+                         '<img src="$1" class="img-fluid rounded my-2" style="max-height:150px;">')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
                 .replace(/\n/g, '<br>');
@@ -733,7 +746,7 @@
                     showToast('@TempData["ToastType"]', '@TempData["ToastTitle"]', '@TempData["ToastMessage"]');
             </text>
         }
-                    });
+            });
     </script>
 
 
@@ -779,7 +792,7 @@
         animation: fadeInUp 0.3s ease-in-out;
     }
 
-    #chat-window {
+    #chat-window{
         position: fixed;
         bottom: 20px;
         right: 55px;
@@ -787,13 +800,13 @@
     }
 
 
-    /* Nút Chatbot */
-    #chatbot #chat-toggle-btn {
-        position: fixed;
-        bottom: 20px; /* giữ cố định 60px từ dưới */
-        right: 7px; /* theo đúng vị trí cũ */
-        z-index: 1050;
-    }
+        /* Nút Chatbot */
+        #chatbot #chat-toggle-btn {
+            position: fixed;
+            bottom: 20px; /* giữ cố định 60px từ dưới */
+            right: 7px; /* theo đúng vị trí cũ */
+            z-index: 1050;
+        }
 
 
     /* Nút Back-to-top */
@@ -816,22 +829,18 @@
 
 
 
-    fadeInUp {
-        from keyframes fadeInUp
-
-    {
+   fadeInUp {
         from
 
-    {
+    keyframes fadeInUp {
+    from {
         transform: translateY(20px);
         opacity: 0;
     }
-
     to {
         transform: translateY(0);
         opacity: 1;
     }
-
-    }
+}
 </style>
 </html>
