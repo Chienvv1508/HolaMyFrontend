@@ -355,9 +355,11 @@
 
     <script>
 
-        async function fetchUserProfile(token) {
-            // const token = localStorage.getItem('jwtToken');
-            if (!token) return null;
+                async function fetchUserProfile(token) {
+            if (!token) {
+                console.error('Token is not provided to fetchUserProfile.');
+                return null;
+            }
 
             try {
                 const response = await fetch('http://localhost:8888/api/User/profile', {
@@ -369,9 +371,20 @@
                 });
 
                 if (response.ok) {
-                    return await response.json();
+                    // Đọc toàn bộ phản hồi từ API (có dạng {statusCode, message, data})
+                    const apiResponse = await response.json();
+
+                    // Quan trọng: Chỉ trả về phần "data" bên trong phản hồi.
+                    // Thêm kiểm tra để đảm bảo apiResponse và apiResponse.data tồn tại.
+                    if (apiResponse && apiResponse.data) {
+                        return apiResponse.data;
+                    } else {
+                        console.error('API response is OK, but data property is missing.', apiResponse);
+                        return null;
+                    }
                 } else {
-                    console.error('Failed to fetch user profile:', await response.text());
+                    // Nếu API trả về lỗi (401, 404, 500...), ghi lại lỗi và trả về null.
+                    console.error('Failed to fetch user profile. Status:', response.status, await response.text());
                     return null;
                 }
             } catch (error) {
