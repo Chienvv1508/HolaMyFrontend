@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
 using HolaMyFrontend.Models;
 using HolaMy.Core.Common;
+using HolaMy.Core.DTOs.BuildingDTOs;
 
 namespace HolaMyFrontend.Pages.Buildings
 {
@@ -22,8 +23,8 @@ namespace HolaMyFrontend.Pages.Buildings
         public List<BuildingListDTO> Buildings { get; set; } = new List<BuildingListDTO>();
         public List<BuildingListDTO> FeaturedBuildings { get; set; } = new List<BuildingListDTO>();
         public int FeatureBuildingNumber { get; set; } = 5;
-        public List<RoomTypeListDTO> RoomTypeListDTO { get; set; } = new List<RoomTypeListDTO>();
-        public List<AmenityListDTO> AmenityListDTO { get; set; } = new List<AmenityListDTO>();
+        public List<RoomTypeListBuildingDTO> RoomTypeListDTO { get; set; } = new List<RoomTypeListBuildingDTO>();
+        public List<AmenityBuildingDTO> AmenityListDTO { get; set; } = new List<AmenityBuildingDTO>();
         public List<WardDTO> Wards { get; set; } = new List<WardDTO>();
         public int CurrentPage { get; set; } = 1;
         public int PageSize { get; set; } = 12;
@@ -112,19 +113,19 @@ namespace HolaMyFrontend.Pages.Buildings
                 }
 
                 // Lấy danh sách RoomType
-                var roomTypeResponse = await client.GetAsync("/Admin/RoomTypeManagement/All");
+                var roomTypeResponse = await client.GetAsync("/api/Building/get-room-type-list");
                 if (roomTypeResponse.IsSuccessStatusCode)
                 {
-                    var roomTypeApiResponse = await roomTypeResponse.Content.ReadFromJsonAsync<IEnumerable<RoomTypeListDTO>>();
-                    RoomTypeListDTO = roomTypeApiResponse?.ToList() ?? new List<RoomTypeListDTO>();
+                    var roomTypeApiResponse = await roomTypeResponse.Content.ReadFromJsonAsync< ResponseDTO<List<RoomTypeListBuildingDTO>>>();
+                    RoomTypeListDTO = roomTypeApiResponse?.Data ?? new List<RoomTypeListBuildingDTO>();
                 }
 
                 // Lấy danh sách Amenity
-                var amenityResponse = await client.GetAsync("/Admin/AmenityManagement/All");
+                var amenityResponse = await client.GetAsync("/api/Building/get-amenity-list");
                 if (amenityResponse.IsSuccessStatusCode)
                 {
-                    var amenityApiResponse = await amenityResponse.Content.ReadFromJsonAsync<IEnumerable<AmenityListDTO>>();
-                    AmenityListDTO = amenityApiResponse?.ToList() ?? new List<AmenityListDTO>();
+                    var amenityApiResponse = await amenityResponse.Content.ReadFromJsonAsync<ResponseDTO<List<AmenityBuildingDTO>>>();
+                    AmenityListDTO = amenityApiResponse?.Data ?? new List<AmenityBuildingDTO>();
                 }
             }
             catch (Exception ex)
@@ -133,8 +134,8 @@ namespace HolaMyFrontend.Pages.Buildings
                 Buildings = new List<BuildingListDTO>();
                 FeaturedBuildings = new List<BuildingListDTO>();
                 Wards = new List<WardDTO>();
-                RoomTypeListDTO = new List<RoomTypeListDTO>();
-                AmenityListDTO = new List<AmenityListDTO>();
+                RoomTypeListDTO = new List<RoomTypeListBuildingDTO>();
+                AmenityListDTO = new List<AmenityBuildingDTO>();
             }
         }
         public string BuildQueryString(int page)

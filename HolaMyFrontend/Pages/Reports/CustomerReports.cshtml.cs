@@ -15,17 +15,19 @@ namespace HolaMyFrontend.Pages.Reports
         private readonly ApiSettings _apiSettings;
         private readonly ILogger<CustomerReportsModel> _logger;
         private readonly ApiClientService _apiClientService;
+        private readonly ToastService _toastService;
+        private readonly string[] _validSortOptions = { "created-desc", "created-asc", "status" };
 
-        public CustomerReportsModel(IHttpClientFactory httpClientFactory, IOptions<ApiSettings> apiSettings, ILogger<CustomerReportsModel> logger, ApiClientService apiClientService)
+        public CustomerReportsModel(IHttpClientFactory httpClientFactory, IOptions<ApiSettings> apiSettings, ILogger<CustomerReportsModel> logger, ApiClientService apiClientService, ToastService toastService)
         {
             _httpClientFactory = httpClientFactory;
             _apiSettings = apiSettings.Value;
             _logger = logger;
             _apiClientService = apiClientService;
+            _toastService = toastService;
         }
 
         public PagedResult<ReportResponseDto> Reports { get; set; } = new PagedResult<ReportResponseDto>();
-        public string ErrorMessage { get; set; }
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
         public string SortBy { get; set; }
@@ -37,27 +39,25 @@ namespace HolaMyFrontend.Pages.Reports
                 var (client, errorResult) = _apiClientService.GetAuthorizedClient();
                 if (errorResult != null)
                 {
-                    ErrorMessage = "Vui lòng đăng nhập lại.";
-                    TempData["ErrorMessage"] = ErrorMessage;
+                    _toastService.ShowError("Lỗi", "Vui lòng đăng nhập lại.");
                     return;
                 }
 
-                Page = page;
-                PageSize = pageSize;
-                SortBy = sortBy;
+                Page = Math.Max(1, page);
+                PageSize = Math.Max(5, Math.Min(20, pageSize));
+                SortBy = _validSortOptions.Contains(sortBy) ? sortBy : "created-desc";
 
-                var query = $"?page={page}&pageSize={pageSize}";
-                if (!string.IsNullOrEmpty(sortBy))
+                var query = $"?page={Page}&pageSize={PageSize}";
+                if (!string.IsNullOrEmpty(SortBy))
                 {
-                    query += $"&sortBy={sortBy}";
+                    query += $"&sortBy={Uri.EscapeDataString(SortBy)}";
                 }
 
                 var response = await client.GetAsync($"{_apiSettings.BaseUrl}/api/Report/customer{query}");
                 var unauthorizedResult = _apiClientService.HandleUnauthorizedResponse(response);
                 if (unauthorizedResult != null)
                 {
-                    ErrorMessage = "Phiên đăng nhập đã hết hạn.";
-                    TempData["ErrorMessage"] = ErrorMessage;
+                    _toastService.ShowError("Lỗi", "Phiên đăng nhập đã hết hạn.");
                     return;
                 }
 
@@ -67,29 +67,23 @@ namespace HolaMyFrontend.Pages.Reports
                     var apiResponse = JsonSerializer.Deserialize<PagedResult<ReportResponseDto>>(jsonString,
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    if (apiResponse != null && apiResponse.Items != null)
+                    Reports = apiResponse ?? new PagedResult<ReportResponseDto>();
+                    if (!Reports.Items.Any())
                     {
-                        Reports = apiResponse;
-                    }
-                    else
-                    {
-                        ErrorMessage = "Không tìm thấy báo cáo.";
+                        _toastService.ShowError("Thông báo", "Không tìm thấy báo cáo.");
                     }
                 }
                 else
                 {
-                    ErrorMessage = $"Lỗi khi gọi API: {response.StatusCode}";
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("API call failed: Status {StatusCode}, Content: {ErrorContent}", response.StatusCode, errorContent);
+                    _toastService.ShowError("Lỗi", $"Lỗi khi gọi API: {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while fetching customer reports");
-                ErrorMessage = $"Lỗi xảy ra: {ex.Message}";
-            }
-
-            if (!string.IsNullOrEmpty(ErrorMessage))
-            {
-                TempData["ErrorMessage"] = ErrorMessage;
+                _logger.LogError(ex, "Error occurred while fetching customer reports for page {Page}, pageSize {PageSize}", page, pageSize);
+                _toastService.ShowError("Lỗi", "Lỗi xảy ra khi tải danh sách báo cáo.");
             }
         }
     }
