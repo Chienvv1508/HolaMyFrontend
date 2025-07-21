@@ -34,6 +34,11 @@ namespace HolaMyFrontend.Pages.HomePage
                 ViewData["Token"] = token;
                 var handler = new JwtSecurityTokenHandler();
                 var jwt = handler.ReadJwtToken(token);
+                var exp = jwt.ValidTo;
+                if(exp < DateTime.Now)
+                {
+                    return RedirectToPage("Logout");
+                }
                 var claims = jwt.Claims.ToList();
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
