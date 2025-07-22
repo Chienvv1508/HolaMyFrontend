@@ -456,7 +456,7 @@
             const viewMoreMessages = document.getElementById('view-more-messages');
             const messageItems = document.querySelectorAll('.message-item');
             const tabContents = document.querySelectorAll('.tab-content');
-
+           
 
 
 
@@ -465,10 +465,14 @@
                 messageMenu.classList.toggle('show');
             });
 
+            const notificationToggle = document.getElementById('notification-toggle');
+            const notificationMenu = document.getElementById('notification-menu');
+
             notificationToggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 notificationMenu.classList.toggle('show');
             });
+           
 
             document.addEventListener('click', (e) => {
                 if (!messageToggle.contains(e.target) && !messageMenu.contains(e.target)) {
@@ -525,18 +529,18 @@
 
 
 
-            const notificationToggle = document.getElementById('notification-toggle');
-            const notificationMenu = document.getElementById('notification-menu');
+            // const notificationToggle = document.getElementById('notification-toggle');
+            // const notificationMenu = document.getElementById('notification-menu');
 
-            notificationToggle.addEventListener('click', (e) => {
-                e.preventDefault();
-                notificationMenu.classList.toggle('show');
-            });
-            document.addEventListener('click', (e) => {
-                if (!notificationToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
-                    notificationMenu.classList.remove('show');
-                }
-            });
+            // notificationToggle.addEventListener('click', (e) => {
+            //     e.preventDefault();
+            //     notificationMenu.classList.toggle('show');
+            // });
+            // document.addEventListener('click', (e) => {
+            //     if (!notificationToggle.contains(e.target) && !notificationMenu.contains(e.target)) {
+            //         notificationMenu.classList.remove('show');
+            //     }
+            // });
         });
     </script>
 
@@ -650,7 +654,7 @@
             if (token) {
                 const response = await fetchUserProfile(token);
                 if (response) {
-                    const user = response;
+                    const user = response.data;
                     await connect();
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
