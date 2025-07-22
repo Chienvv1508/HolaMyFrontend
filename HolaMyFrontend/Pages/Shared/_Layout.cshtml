@@ -667,7 +667,7 @@
             if (token) {
                 const response = await fetchUserProfile(token);
                 if (response) {
-                    const user = response.data;
+                    const user = response;
                     await connect();
                     loginBtn.style.display = 'none';
                     userProfile.style.display = 'flex';
