@@ -94,6 +94,8 @@ namespace HolaMyFrontend.Pages.HomePage
               var  result = JsonSerializer.Deserialize<ResponseData<string>>(data1);
                 return RedirectToPage(new { token = result.data });
             }
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                return Redirect("/BanPage");
             var data = await response.Content.ReadAsStringAsync();
             var rs = JsonSerializer.Deserialize<ResponseData<string>>(data);
             ModelState.AddModelError(string.Empty, rs.message);
