@@ -214,6 +214,8 @@
 
        
     </style>
+    @RenderSection("Styles", required: false)
+    
 
 </head>
 <body>
@@ -612,9 +614,31 @@
                 if (newNotification.MessageType == 0){
                     await appendNewNotification(token, newNotification.MessageBody);
                 }
+                if (newNotification.MessageType == 2) {
+                    window.location.href = "http://localhost:5050/HomePage/BanPage";
+                }
                
             };
             socket.onclose = () => console.log("WebSocket closed.");
+        }
+
+       
+
+
+
+        function sendMessage(ws, senderId, toUserId, conversationId, content) {
+            if (ws.readyState === WebSocket.OPEN) {
+                const message = {
+                    senderId: senderId,
+                    toUserId: toUserId,
+                    conversationId: conversationId,
+                    content: content
+                };
+
+                ws.send(JSON.stringify(message));
+            } else {
+                console.error("WebSocket is not open. ReadyState: " + ws.readyState);
+            }
         }
         async function appendNewNotification(token, notification) {
             const notificationList = document.getElementById('notification-list');
